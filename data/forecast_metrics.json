@@ -1,512 +1,299 @@
 {
-  "dataset": {
-    "synthetic": true,
-    "company": "Vantage Process Group",
-    "currency": "USD",
-    "seed": 42,
-    "actuals": "2022-01 to 2025-12",
-    "budget": "2022-01 to 2026-12",
-    "forecast": "2026-01 to 2026-12",
-    "grain": "month x region x product line x customer segment"
-  },
-  "row_counts": {
-    "dim_date": 1826,
-    "dim_region": 4,
-    "dim_product_line": 5,
-    "dim_customer_segment": 3,
-    "fact_revenue_actuals": 2880,
-    "fact_budget_rows": 3600,
-    "fact_forecast_rows": 2160,
-    "fact_backtest_rows": 720,
-    "fact_budget_forecast": 6480
-  },
-  "annual_actuals": {
-    "2022": {
-      "revenue": 165290919.56,
-      "cogs": 99298760.39,
-      "gross_profit": 65992159.17,
-      "gross_margin": 0.3992485452054436,
-      "opex": 50931353.02,
-      "ebitda": 15060806.15,
-      "ebitda_margin": 0.09111696026673129
-    },
-    "2023": {
-      "revenue": 180111734.22,
-      "cogs": 104236897.88,
-      "gross_profit": 75874836.34,
-      "gross_margin": 0.42126536990267177,
-      "opex": 53590358.78,
-      "ebitda": 22284477.56,
-      "ebitda_margin": 0.12372585082535664
-    },
-    "2024": {
-      "revenue": 201196008.13,
-      "cogs": 113034442.44,
-      "gross_profit": 88161565.69,
-      "gross_margin": 0.4381874496885427,
-      "opex": 56664646.86,
-      "ebitda": 31496918.83,
-      "ebitda_margin": 0.1565484281857556
-    },
-    "2025": {
-      "revenue": 219919317.46,
-      "cogs": 119974740.89,
-      "gross_profit": 99944576.57,
-      "gross_margin": 0.45446019805958343,
-      "opex": 58911319.35,
-      "ebitda": 41033257.22,
-      "ebitda_margin": 0.18658323285976608
-    }
-  },
-  "annual_budget": {
-    "2022": {
-      "revenue": 173400000.17,
-      "cogs": 103991355.25,
-      "gross_profit": 69408644.92,
-      "gross_margin": 0.40028053547838705,
-      "opex": 51692161.51,
-      "ebitda": 17716483.41,
-      "ebitda_margin": 0.1021711845019083
-    },
-    "2023": {
-      "revenue": 187099999.89,
-      "cogs": 110032657.8,
-      "gross_profit": 77067342.09,
-      "gross_margin": 0.4119045544377847,
-      "opex": 54933270.05,
-      "ebitda": 22134072.04,
-      "ebitda_margin": 0.11830075923577277
-    },
-    "2024": {
-      "revenue": 196199999.97,
-      "cogs": 113087461.44,
-      "gross_profit": 83112538.53,
-      "gross_margin": 0.42361130755712717,
-      "opex": 57995255.29,
-      "ebitda": 25117283.24,
-      "ebitda_margin": 0.12801877290438618
-    },
-    "2025": {
-      "revenue": 225599999.94,
-      "cogs": 127373580.33,
-      "gross_profit": 98226419.61,
-      "gross_margin": 0.4354007962594152,
-      "opex": 62579054.6,
-      "ebitda": 35647365.01,
-      "ebitda_margin": 0.15801136976720162
-    },
-    "2026": {
-      "revenue": 237512862.89,
-      "cogs": 131279767.45,
-      "gross_profit": 106233095.44,
-      "gross_margin": 0.44727301985829726,
-      "opex": 66123327.86,
-      "ebitda": 40109767.58,
-      "ebitda_margin": 0.16887408577351934
-    }
-  },
-  "fy2025_vs_budget": {
-    "revenue": "-$5.7M",
-    "revenue_pct": "-2.5%",
-    "gross_margin_bps": "+191 bps",
-    "ebitda": "+$5.4M",
-    "ebitda_pct": "+15.1%",
-    "opex": "-$3.7M"
-  },
-  "yoy": {
-    "2023": {
-      "revenue": "+9.0%",
-      "ebitda": "+48.0%",
-      "vs_budget": "-3.7%"
-    },
-    "2024": {
-      "revenue": "+11.7%",
-      "ebitda": "+41.3%",
-      "vs_budget": "+2.5%"
-    },
-    "2025": {
-      "revenue": "+9.3%",
-      "ebitda": "+30.3%",
-      "vs_budget": "-2.5%"
-    }
-  },
-  "cagr_fy2022_fy2025": "10.0%",
-  "gross_margin_expansion_bps": "+552 bps",
-  "ebitda_margin_expansion_bps": "+955 bps",
-  "mix": {
-    "region": {
-      "2022": {
-        "North America": "48.3%",
-        "EMEA": "29.5%",
-        "Asia Pacific": "15.2%",
-        "Latin America": "6.9%"
-      },
-      "2025": {
-        "North America": "45.7%",
-        "EMEA": "25.7%",
-        "Asia Pacific": "21.0%",
-        "Latin America": "7.7%"
-      }
-    },
-    "product": {
-      "2022": {
-        "Process Equipment": "42.6%",
-        "Aftermarket Parts": "18.1%",
-        "Field Service Contracts": "22.1%",
-        "Industrial Software": "8.3%",
-        "Professional Services": "8.9%"
-      },
-      "2025": {
-        "Process Equipment": "33.1%",
-        "Aftermarket Parts": "19.7%",
-        "Field Service Contracts": "23.8%",
-        "Industrial Software": "15.7%",
-        "Professional Services": "7.7%"
-      }
-    },
-    "segment": {
-      "2022": {
-        "Enterprise": "57.1%",
-        "Mid-Market": "30.7%",
-        "SMB": "12.1%"
-      },
-      "2025": {
-        "Enterprise": "55.1%",
-        "Mid-Market": "32.0%",
-        "SMB": "12.9%"
-      }
-    }
-  },
-  "margin_bridge_fy2022_fy2025": {
-    "mix_effect": "+369 bps",
-    "rate_effect": "+183 bps",
-    "total_change": "+552 bps",
-    "lines": {
-      "Process Equipment": {
-        "share_start": 0.4260130166705207,
-        "share_end": 0.33128365680405203,
-        "margin_start": 0.30020570782024986,
-        "margin_end": 0.3199583606799159
-      },
-      "Aftermarket Parts": {
-        "share_start": 0.1813020923337647,
-        "share_end": 0.19720503696947045,
-        "margin_start": 0.549023403335747,
-        "margin_end": 0.5643190132535433
-      },
-      "Field Service Contracts": {
-        "share_start": 0.2205783837191691,
-        "share_end": 0.23817347877831124,
-        "margin_start": 0.4045261344183314,
-        "margin_end": 0.425699637020723
-      },
-      "Industrial Software": {
-        "share_start": 0.08275203003535156,
-        "share_end": 0.15665059203480852,
-        "margin_start": 0.7145424241642505,
-        "margin_end": 0.735746948976456
-      },
-      "Professional Services": {
-        "share_start": 0.08935447724119369,
-        "share_end": 0.07668723541335785,
-        "margin_start": 0.2625314131579756,
-        "margin_end": 0.2677252833245172
-      }
-    }
-  },
-  "region_fy2025": {
-    "North America": {
-      "revenue": "$100.4M",
-      "gross_margin": "46.7%",
-      "ebitda_margin": "24.5%",
-      "yoy": "+7.2%"
-    },
-    "EMEA": {
-      "revenue": "$56.5M",
-      "gross_margin": "44.1%",
-      "ebitda_margin": "16.7%",
-      "yoy": "+4.1%"
-    },
-    "Asia Pacific": {
-      "revenue": "$46.2M",
-      "gross_margin": "45.5%",
-      "ebitda_margin": "11.0%",
-      "yoy": "+20.5%"
-    },
-    "Latin America": {
-      "revenue": "$16.8M",
-      "gross_margin": "42.2%",
-      "ebitda_margin": "11.2%",
-      "yoy": "+13.1%"
-    }
-  },
-  "forecast_2026": {
-    "base": {
-      "revenue": 240225854.74,
-      "cogs": 128951161.65,
-      "gross_profit": 111274693.09,
-      "gross_margin": 0.46320864675633794,
-      "opex": 61562328.72,
-      "ebitda": 49712364.37,
-      "ebitda_margin": 0.20694010819028796
-    },
-    "upside": {
-      "revenue": 246963314.48,
-      "cogs": 130434810.8,
-      "gross_profit": 116528503.68,
-      "gross_margin": 0.4718453990843118,
-      "opex": 63624224.89,
-      "ebitda": 52904278.79,
-      "ebitda_margin": 0.21421918029159095
-    },
-    "downside": {
-      "revenue": 233143715.31,
-      "cogs": 128829264.38,
-      "gross_profit": 104314450.93,
-      "gross_margin": 0.4474255323215472,
-      "opex": 59971723.1,
-      "ebitda": 44342727.83,
-      "ebitda_margin": 0.1901948236993633
-    },
-    "base_vs_fy2025": "+9.2%",
-    "base_vs_budget": "+$2.7M",
-    "base_ebitda_vs_budget": "+$9.6M",
-    "base_vs_budget_pct": "+1.1%",
-    "budget_vs_fy2025": "+8.0%",
-    "interval_80": "$233.1M to $247.0M",
-    "interval_95": "$230.1M to $251.6M"
-  },
-  "backtest": {
-    "model": "Holt-Winters additive trend, multiplicative seasonality, period 12",
-    "model_key": "holt_winters",
-    "train": "2022-01 to 2024-12",
-    "holdout": "2025-01 to 2025-12",
-    "origin": "December 2024 close",
-    "mape": "2.4%",
-    "wape": "2.5%",
-    "rmse": "$547K",
-    "bias": "-1.2%",
-    "mape_raw": 0.024214115033197047,
-    "wape_raw": 0.025330127713386285,
-    "rmse_raw": 547337.364794365,
-    "bias_raw": -0.012489899309592316,
-    "holdout_actual_revenue": 219919317.46,
-    "holdout_forecast_revenue": 217172547.33,
-    "monthly": [
+  "model": {
+    "name": "Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",
+    "family": "Holt-Winters",
+    "trend": "add",
+    "damped_trend": true,
+    "seasonal": "mul",
+    "seasonal_periods": 12,
+    "initialization_method": "estimated",
+    "window_years": 8,
+    "window_label": "8-year",
+    "selection_rule": "Lowest mean total MAPE across three 12-month validation origins ending the month before the sealed holdout. The specification must fit every sector on those origins. Ties prefer a longer window, then an undamped trend, then multiplicative seasonality.",
+    "validation_total_mape": 0.013313,
+    "validation_origins": [
       {
-        "month": "2025-01",
-        "actual": 13789845.91,
-        "forecast": 14235590.02,
-        "absolute_pct_error": 0.0323240817342428
+        "origin": "2022-11-01",
+        "mape": 0.016476
       },
       {
-        "month": "2025-02",
-        "actual": 14616718.24,
-        "forecast": 14934200.53,
-        "absolute_pct_error": 0.02172049023145081
+        "origin": "2023-11-01",
+        "mape": 0.013902
       },
       {
-        "month": "2025-03",
-        "actual": 19166828.0,
-        "forecast": 19616616.16,
-        "absolute_pct_error": 0.02346701068307949
-      },
-      {
-        "month": "2025-04",
-        "actual": 15585231.96,
-        "forecast": 15758519.52,
-        "absolute_pct_error": 0.011118702666535666
-      },
-      {
-        "month": "2025-05",
-        "actual": 16301238.89,
-        "forecast": 16326843.91,
-        "absolute_pct_error": 0.0015707409623894433
-      },
-      {
-        "month": "2025-06",
-        "actual": 20400078.03,
-        "forecast": 19401390.45,
-        "absolute_pct_error": 0.04895508640074246
-      },
-      {
-        "month": "2025-07",
-        "actual": 15630649.64,
-        "forecast": 15320672.69,
-        "absolute_pct_error": 0.019831353986486267
-      },
-      {
-        "month": "2025-08",
-        "actual": 16107985.69,
-        "forecast": 15664572.04,
-        "absolute_pct_error": 0.02752756697382099
-      },
-      {
-        "month": "2025-09",
-        "actual": 20984502.45,
-        "forecast": 20501345.18,
-        "absolute_pct_error": 0.023024480454518614
-      },
-      {
-        "month": "2025-10",
-        "actual": 17851445.05,
-        "forecast": 17578221.7,
-        "absolute_pct_error": 0.015305391004755224
-      },
-      {
-        "month": "2025-11",
-        "actual": 19610812.54,
-        "forecast": 19012287.94,
-        "absolute_pct_error": 0.030520132410112383
-      },
-      {
-        "month": "2025-12",
-        "actual": 29873981.06,
-        "forecast": 28822287.19,
-        "absolute_pct_error": 0.03520434289023046
+        "origin": "2024-11-01",
+        "mape": 0.009562
       }
     ],
-    "level_smoothing": 0.8086,
-    "trend_smoothing": 0.0067,
-    "seasonal_smoothing": 0.0,
-    "simulations": 4000,
-    "interval_method": "Residual bootstrap of the refit Holt-Winters model, 4,000 paths, seed 42. Downside and Upside are the 10th and 90th percentiles of simulated FY2026 revenue, allocated across months in proportion to the square root of the horizon."
+    "candidates_scored": 24,
+    "reconciliation": "Each sector is forecast on its own, then multiplied by a common monthly factor so the sectors sum to the total model's forecast.",
+    "interval": "80 percent central band from 2000 bootstrap simulations of the fitted Holt-Winters model. Sector bands are scaled by the same reconciliation factor as the point forecast.",
+    "interval_level": 0.8,
+    "simulations": 2000,
+    "random_seed": 42,
+    "holdout_months": 12,
+    "history_start": "1992-01-01",
+    "train_end": "2025-10-01",
+    "holdout_start": "2025-11-01",
+    "holdout_end": "2026-10-01",
+    "forecast_start": "2026-11-01",
+    "forecast_end": "2027-10-01",
+    "optimizer_converged": {
+      "holdout_TOTAL": true,
+      "holdout_MOTOR": true,
+      "holdout_FURNITURE": true,
+      "holdout_ELECTRONICS": true,
+      "holdout_BUILDING": true,
+      "holdout_FOOD_STORES": true,
+      "holdout_HEALTH": true,
+      "holdout_GASOLINE": true,
+      "holdout_CLOTHING": true,
+      "holdout_SPORTING": true,
+      "holdout_GENERAL": true,
+      "holdout_MISC": true,
+      "holdout_NONSTORE": true,
+      "holdout_FOOD_SERVICE": true,
+      "forward_TOTAL": true,
+      "forward_MOTOR": true,
+      "forward_FURNITURE": true,
+      "forward_ELECTRONICS": true,
+      "forward_BUILDING": true,
+      "forward_FOOD_STORES": true,
+      "forward_HEALTH": true,
+      "forward_GASOLINE": true,
+      "forward_CLOTHING": true,
+      "forward_SPORTING": true,
+      "forward_GENERAL": true,
+      "forward_MISC": true,
+      "forward_NONSTORE": true,
+      "forward_FOOD_SERVICE": true
+    },
+    "mean_abs_reconcile_gap": 0.006097
   },
-  "display": {
-    "fy2022": {
-      "revenue": "$165.3M",
-      "gross_margin": "39.9%",
-      "opex": "$50.9M",
-      "ebitda": "$15.1M",
-      "ebitda_margin": "9.1%"
+  "total": {
+    "mape": 0.024223,
+    "wape": 0.024682,
+    "smape": 0.024648,
+    "rmse_millions": 21983.09,
+    "mae_millions": 17883.86,
+    "bias_millions": -15108.75,
+    "actual_millions": 8694959.0,
+    "forecast_millions": 8513653.98,
+    "seasonal_naive_mape": 0.043105,
+    "mape_skill_vs_seasonal_naive": 0.438047,
+    "interval_80_coverage": 1.0,
+    "prior_12_actual_millions": 8694959.0,
+    "forward_forecast_millions": 9154657.13,
+    "forward_vs_prior": 0.052869
+  },
+  "sectors": [
+    {
+      "mape": 0.01374,
+      "wape": 0.013827,
+      "smape": 0.013838,
+      "rmse_millions": 2234.44,
+      "mae_millions": 1901.18,
+      "bias_millions": -1191.64,
+      "actual_millions": 1650009.0,
+      "forecast_millions": 1635709.31,
+      "seasonal_naive_mape": 0.02519,
+      "mape_skill_vs_seasonal_naive": 0.454545,
+      "interval_80_coverage": 1.0,
+      "sector_key": "MOTOR",
+      "sector_short": "Motor Vehicles",
+      "sector_name": "Motor Vehicle and Parts Dealers"
     },
-    "fy2023": {
-      "revenue": "$180.1M",
-      "gross_margin": "42.1%",
-      "opex": "$53.6M",
-      "ebitda": "$22.3M",
-      "ebitda_margin": "12.4%"
+    {
+      "mape": 0.030114,
+      "wape": 0.030302,
+      "smape": 0.030614,
+      "rmse_millions": 371.79,
+      "mae_millions": 319.33,
+      "bias_millions": -187.18,
+      "actual_millions": 126461.0,
+      "forecast_millions": 124214.88,
+      "seasonal_naive_mape": 0.036513,
+      "mape_skill_vs_seasonal_naive": 0.175253,
+      "interval_80_coverage": 1.0,
+      "sector_key": "FURNITURE",
+      "sector_short": "Furniture & Home",
+      "sector_name": "Furniture and Home Furnishings Stores"
     },
-    "fy2024": {
-      "revenue": "$201.2M",
-      "gross_margin": "43.8%",
-      "opex": "$56.7M",
-      "ebitda": "$31.5M",
-      "ebitda_margin": "15.7%"
+    {
+      "mape": 0.058067,
+      "wape": 0.056842,
+      "smape": 0.060384,
+      "rmse_millions": 496.81,
+      "mae_millions": 429.64,
+      "bias_millions": -395.04,
+      "actual_millions": 90703.0,
+      "forecast_millions": 85962.55,
+      "seasonal_naive_mape": 0.059993,
+      "mape_skill_vs_seasonal_naive": 0.032104,
+      "interval_80_coverage": 1.0,
+      "sector_key": "ELECTRONICS",
+      "sector_short": "Electronics",
+      "sector_name": "Electronics and Appliance Stores"
     },
-    "fy2025": {
-      "revenue": "$219.9M",
-      "gross_margin": "45.4%",
-      "opex": "$58.9M",
-      "ebitda": "$41.0M",
-      "ebitda_margin": "18.7%"
+    {
+      "mape": 0.032938,
+      "wape": 0.033716,
+      "smape": 0.033455,
+      "rmse_millions": 1609.93,
+      "mae_millions": 1472.34,
+      "bias_millions": -1080.19,
+      "actual_millions": 524020.0,
+      "forecast_millions": 511057.68,
+      "seasonal_naive_mape": 0.041965,
+      "mape_skill_vs_seasonal_naive": 0.215108,
+      "interval_80_coverage": 1.0,
+      "sector_key": "BUILDING",
+      "sector_short": "Building Materials",
+      "sector_name": "Building Materials and Garden Equipment"
     },
-    "fy2024_budget": {
-      "revenue": "$196.2M",
-      "gross_margin": "42.4%",
-      "opex": "$58.0M",
-      "ebitda": "$25.1M",
-      "ebitda_margin": "12.8%"
+    {
+      "mape": 0.013504,
+      "wape": 0.013304,
+      "smape": 0.013366,
+      "rmse_millions": 1451.13,
+      "mae_millions": 1124.13,
+      "bias_millions": 865.32,
+      "actual_millions": 1013946.0,
+      "forecast_millions": 1024329.81,
+      "seasonal_naive_mape": 0.011753,
+      "mape_skill_vs_seasonal_naive": -0.148983,
+      "interval_80_coverage": 0.75,
+      "sector_key": "FOOD_STORES",
+      "sector_short": "Food & Beverage Stores",
+      "sector_name": "Food and Beverage Stores"
     },
-    "fy2025_budget": {
-      "revenue": "$225.6M",
-      "gross_margin": "43.5%",
-      "opex": "$62.6M",
-      "ebitda": "$35.6M",
-      "ebitda_margin": "15.8%"
+    {
+      "mape": 0.0744,
+      "wape": 0.07268,
+      "smape": 0.071314,
+      "rmse_millions": 3024.95,
+      "mae_millions": 2821.95,
+      "bias_millions": 2761.15,
+      "actual_millions": 465927.0,
+      "forecast_millions": 499060.77,
+      "seasonal_naive_mape": 0.022253,
+      "mape_skill_vs_seasonal_naive": -2.343369,
+      "interval_80_coverage": 0.083333,
+      "sector_key": "HEALTH",
+      "sector_short": "Health & Personal Care",
+      "sector_name": "Health and Personal Care Stores"
     },
-    "fy2026_budget": {
-      "revenue": "$237.5M",
-      "gross_margin": "44.7%",
-      "opex": "$66.1M",
-      "ebitda": "$40.1M",
-      "ebitda_margin": "16.9%"
+    {
+      "mape": 0.12519,
+      "wape": 0.137228,
+      "smape": 0.137696,
+      "rmse_millions": 10234.56,
+      "mae_millions": 8358.2,
+      "bias_millions": -8358.2,
+      "actual_millions": 730887.0,
+      "forecast_millions": 630588.63,
+      "seasonal_naive_mape": 0.12722,
+      "mape_skill_vs_seasonal_naive": 0.015957,
+      "interval_80_coverage": 0.5,
+      "sector_key": "GASOLINE",
+      "sector_short": "Gasoline Stations",
+      "sector_name": "Gasoline Stations"
     },
-    "fy2026_base": {
-      "revenue": "$240.2M",
-      "gross_margin": "46.3%",
-      "opex": "$61.6M",
-      "ebitda": "$49.7M",
-      "ebitda_margin": "20.7%"
+    {
+      "mape": 0.036421,
+      "wape": 0.036314,
+      "smape": 0.037298,
+      "rmse_millions": 1084.98,
+      "mae_millions": 944.64,
+      "bias_millions": -844.83,
+      "actual_millions": 312154.0,
+      "forecast_millions": 302016.01,
+      "seasonal_naive_mape": 0.052454,
+      "mape_skill_vs_seasonal_naive": 0.305658,
+      "interval_80_coverage": 1.0,
+      "sector_key": "CLOTHING",
+      "sector_short": "Clothing",
+      "sector_name": "Clothing and Clothing Accessories Stores"
     },
-    "fy2026_upside": {
-      "revenue": "$247.0M",
-      "gross_margin": "47.2%",
-      "opex": "$63.6M",
-      "ebitda": "$52.9M",
-      "ebitda_margin": "21.4%"
+    {
+      "mape": 0.066078,
+      "wape": 0.065949,
+      "smape": 0.06869,
+      "rmse_millions": 602.59,
+      "mae_millions": 560.33,
+      "bias_millions": -560.33,
+      "actual_millions": 101958.0,
+      "forecast_millions": 95234.02,
+      "seasonal_naive_mape": 0.075605,
+      "mape_skill_vs_seasonal_naive": 0.12601,
+      "interval_80_coverage": 1.0,
+      "sector_key": "SPORTING",
+      "sector_short": "Sporting Goods & Hobby",
+      "sector_name": "Sporting Goods, Hobby, Musical Instrument, and Book Stores"
     },
-    "fy2026_downside": {
-      "revenue": "$233.1M",
-      "gross_margin": "44.7%",
-      "opex": "$60.0M",
-      "ebitda": "$44.3M",
-      "ebitda_margin": "19.0%"
+    {
+      "mape": 0.023326,
+      "wape": 0.023629,
+      "smape": 0.023621,
+      "rmse_millions": 2199.75,
+      "mae_millions": 1902.99,
+      "bias_millions": -1397.72,
+      "actual_millions": 966421.0,
+      "forecast_millions": 949648.42,
+      "seasonal_naive_mape": 0.031436,
+      "mape_skill_vs_seasonal_naive": 0.257984,
+      "interval_80_coverage": 0.916667,
+      "sector_key": "GENERAL",
+      "sector_short": "General Merchandise",
+      "sector_name": "General Merchandise Stores"
+    },
+    {
+      "mape": 0.061374,
+      "wape": 0.063851,
+      "smape": 0.063787,
+      "rmse_millions": 1166.25,
+      "mae_millions": 989.4,
+      "bias_millions": -866.72,
+      "actual_millions": 185945.0,
+      "forecast_millions": 175544.35,
+      "seasonal_naive_mape": 0.105016,
+      "mape_skill_vs_seasonal_naive": 0.415575,
+      "interval_80_coverage": 1.0,
+      "sector_key": "MISC",
+      "sector_short": "Miscellaneous Stores",
+      "sector_name": "Miscellaneous Store Retailers"
+    },
+    {
+      "mape": 0.025687,
+      "wape": 0.025784,
+      "smape": 0.02588,
+      "rmse_millions": 3924.23,
+      "mae_millions": 3121.22,
+      "bias_millions": -1112.64,
+      "actual_millions": 1452612.0,
+      "forecast_millions": 1439260.33,
+      "seasonal_naive_mape": 0.073358,
+      "mape_skill_vs_seasonal_naive": 0.649841,
+      "interval_80_coverage": 0.833333,
+      "sector_key": "NONSTORE",
+      "sector_short": "Nonstore Retailers",
+      "sector_name": "Nonstore Retailers"
+    },
+    {
+      "mape": 0.032408,
+      "wape": 0.033555,
+      "smape": 0.033209,
+      "rmse_millions": 3737.43,
+      "mae_millions": 3002.96,
+      "bias_millions": -2740.73,
+      "actual_millions": 1073916.0,
+      "forecast_millions": 1041027.22,
+      "seasonal_naive_mape": 0.043901,
+      "mape_skill_vs_seasonal_naive": 0.261794,
+      "interval_80_coverage": 1.0,
+      "sector_key": "FOOD_SERVICE",
+      "sector_short": "Food Services",
+      "sector_name": "Food Services and Drinking Places"
     }
-  },
-  "readme_figures": [
-    "FY2022 revenue $165.3M",
-    "FY2022 gross margin 39.9%",
-    "FY2022 EBITDA $15.1M",
-    "FY2022 EBITDA margin 9.1%",
-    "FY2023 revenue $180.1M",
-    "FY2023 growth +9.0%",
-    "FY2024 revenue $201.2M",
-    "FY2024 growth +11.7%",
-    "FY2024 beat the budget by +2.5%",
-    "FY2025 revenue $219.9M",
-    "FY2025 growth +9.3%",
-    "FY2025 revenue versus budget -$5.7M",
-    "FY2025 revenue variance -2.5%",
-    "FY2025 gross margin 45.4%",
-    "FY2025 gross margin versus budget +191 bps",
-    "FY2025 EBITDA $41.0M",
-    "FY2025 EBITDA versus budget +$5.4M",
-    "FY2025 EBITDA variance +15.1%",
-    "FY2025 EBITDA margin 18.7%",
-    "FY2025 OpEx $58.9M",
-    "FY2025 OpEx versus budget -$3.7M",
-    "three-year revenue CAGR 10.0%",
-    "gross margin expanded +552 bps",
-    "EBITDA margin expanded +955 bps",
-    "software mix from 8.3% to 15.7%",
-    "equipment mix from 42.6% to 33.1%",
-    "Asia Pacific mix from 15.2% to 21.0%",
-    "North America was 45.7% of FY2025 revenue",
-    "mix effect +369 bps and rate effect +183 bps",
-    "FY2026 budget revenue $237.5M",
-    "FY2026 budget gross margin 44.7%",
-    "FY2026 budget EBITDA $40.1M",
-    "FY2026 budget EBITDA margin 16.9%",
-    "FY2026 budget growth +8.0%",
-    "FY2026 base revenue $240.2M",
-    "FY2026 base growth +9.2%",
-    "FY2026 base versus budget +$2.7M",
-    "FY2026 base EBITDA versus budget +$9.6M",
-    "FY2026 base gross margin 46.3%",
-    "FY2026 base EBITDA $49.7M",
-    "FY2026 base EBITDA margin 20.7%",
-    "FY2026 upside revenue $247.0M",
-    "FY2026 upside EBITDA $52.9M",
-    "FY2026 downside revenue $233.1M",
-    "FY2026 downside EBITDA $44.3M",
-    "holdout MAPE 2.4%",
-    "holdout WAPE 2.5%",
-    "holdout RMSE $547K",
-    "holdout bias -1.2%",
-    "80% interval $233.1M to $247.0M",
-    "95% interval $230.1M to $251.6M",
-    "North America FY2025 revenue $100.4M",
-    "North America EBITDA margin 24.5%",
-    "North America growth +7.2%",
-    "EMEA FY2025 revenue $56.5M",
-    "EMEA growth +4.1%",
-    "EMEA EBITDA margin 16.7%",
-    "Asia Pacific FY2025 revenue $46.2M",
-    "Asia Pacific growth +20.5%",
-    "Asia Pacific EBITDA margin 11.0%",
-    "Latin America FY2025 revenue $16.8M",
-    "Latin America growth +13.1%",
-    "smoothing coefficients level 0.81, trend 0.01, seasonal 0.00"
   ]
 }

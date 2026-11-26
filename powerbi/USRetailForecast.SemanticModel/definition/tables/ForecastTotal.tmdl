@@ -1,0 +1,74 @@
+table ForecastTotal
+	lineageTag: 2626510c-f2b5-57cb-acce-2aae46301ce6
+	description = "12-month forecast for all retail and food services, with an 80 percent range."
+
+	column Date
+		dataType: dateTime
+		formatString: "yyyy-mm-dd"
+		lineageTag: 2c158ea2-d570-5e70-9a91-ad1108f97a90
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column Horizon
+		dataType: int64
+		formatString: "0"
+		lineageTag: 9c97bc99-0b4b-50f6-8cc2-7da84425e615
+		summarizeBy: none
+		sourceColumn: Horizon
+
+		annotation SummarizationSetBy = Automatic
+
+	column ForecastNSA
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: 98881519-da6d-5c64-9b01-879d82f9910b
+		summarizeBy: sum
+		sourceColumn: ForecastNSA
+
+		annotation SummarizationSetBy = Automatic
+
+	column Lower80
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: ec4a8418-8734-5d5e-b918-9a7f9b821510
+		summarizeBy: none
+		sourceColumn: Lower80
+
+		annotation SummarizationSetBy = Automatic
+
+	column Upper80
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: d0c9706c-0e54-5daf-bc02-00bc6e8b4326
+		summarizeBy: none
+		sourceColumn: Upper80
+
+		annotation SummarizationSetBy = Automatic
+
+	column Model
+		dataType: string
+		lineageTag: 848932a1-0197-528f-8512-7fcb287530ac
+		summarizeBy: none
+		sourceColumn: Model
+
+		annotation SummarizationSetBy = Automatic
+
+	partition ForecastTotal = m
+		mode: import
+		source =
+			fnLocalCsv(
+			    "forecast_total.csv",
+			    {
+			        {"Date", type date},
+			        {"Horizon", Int64.Type},
+			        {"ForecastNSA", type number},
+			        {"Lower80", type number},
+			        {"Upper80", type number},
+			        {"Model", type text}
+			    }
+			)
+
+	annotation PBI_ResultType = Table
+

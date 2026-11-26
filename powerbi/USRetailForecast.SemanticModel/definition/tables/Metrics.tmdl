@@ -1,0 +1,568 @@
+table Metrics
+	lineageTag: 45522197-6568-589a-98bc-6594c1dd4397
+
+	column MetricsKey
+		dataType: int64
+		formatString: "0"
+		lineageTag: dad76b8e-7ed9-56db-a7d1-4fce1a90eb93
+		summarizeBy: none
+		sourceColumn: MetricsKey
+		isHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	measure 'Retail Sales NSA' = ```
+		SUM ( FactRetailSales[SalesNSA] )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 02356e80-6a3d-55b5-af2f-032320fe42a1
+		description = "Monthly sales, not seasonally adjusted, in millions of dollars."
+
+	measure 'Retail Sales SA' = ```
+		SUM ( FactRetailSales[SalesSA] )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 2d1d2dd3-8ee5-5586-bc88-2de457907611
+		description = "Monthly sales, seasonally adjusted, in millions of dollars."
+
+	measure 'Retail Sales NSA PY' = ```
+		VAR Shifted =
+		    SELECTCOLUMNS ( VALUES ( DimDate[Date] ), "Date", EDATE ( DimDate[Date], -12 ) )
+		RETURN
+		    CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimDate ), TREATAS ( Shifted, DimDate[Date] ) )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 1a19e99b-0ab5-586e-a5b8-3da616b9bb75
+		description = "Not-seasonally-adjusted sales shifted back 12 months."
+
+	measure 'Retail Sales NSA PM' = ```
+		VAR Shifted =
+		    SELECTCOLUMNS ( VALUES ( DimDate[Date] ), "Date", EDATE ( DimDate[Date], -1 ) )
+		RETURN
+		    CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimDate ), TREATAS ( Shifted, DimDate[Date] ) )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 2f7d73ff-0189-5125-b9ca-5dce6fcf16f0
+		description = "Not-seasonally-adjusted sales shifted back 1 month."
+
+	measure 'YoY Growth' = ```
+		DIVIDE ( [Retail Sales NSA] - [Retail Sales NSA PY], [Retail Sales NSA PY] )
+		```
+		formatString: "0.0%"
+		displayFolder: "Growth"
+		lineageTag: f3d63a06-724f-53ec-b84e-97518f96a6e3
+		description = "Change versus the same months last year."
+
+	measure 'MoM Growth' = ```
+		DIVIDE ( [Retail Sales NSA] - [Retail Sales NSA PM], [Retail Sales NSA PM] )
+		```
+		formatString: "0.0%"
+		displayFolder: "Growth"
+		lineageTag: 963cc386-5694-540d-8037-5eb5550b3ba5
+		description = "Change versus the prior month."
+
+	measure 'YoY Change' = ```
+		[Retail Sales NSA] - [Retail Sales NSA PY]
+		```
+		formatString: "#,0"
+		displayFolder: "Growth"
+		lineageTag: 6e0ae62f-42d5-5fc7-8652-f747c27128f1
+		description = "Dollar change versus the same months last year, in millions."
+
+	measure 'MoM Change' = ```
+		[Retail Sales NSA] - [Retail Sales NSA PM]
+		```
+		formatString: "#,0"
+		displayFolder: "Growth"
+		lineageTag: 3dd6c441-c4ef-54e1-9ff2-635dc6e384a0
+		description = "Dollar change versus the prior month, in millions."
+
+	measure 'Last Actual Date' = ```
+		CALCULATE ( MAX ( FactRetailSales[Date] ), REMOVEFILTERS ( DimDate ) )
+		```
+		formatString: "yyyy-mm-dd"
+		displayFolder: "Latest month"
+		lineageTag: a2580b97-a15c-5259-b567-9ec5822b1bfc
+		description = "Most recent month that has published sales."
+
+	measure 'Retail Sales YTD' = ```
+		VAR ContextMax =
+		    MAX ( DimDate[Date] )
+		VAR LastActual = [Last Actual Date]
+		VAR AsOf =
+		    MIN ( ContextMax, LastActual )
+		VAR YearStart =
+		    DATE ( YEAR ( AsOf ), 1, 1 )
+		RETURN
+		    IF (
+		        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+		        BLANK (),
+		        CALCULATE (
+		            [Retail Sales NSA],
+		            REMOVEFILTERS ( DimDate ),
+		            DimDate[Date] >= YearStart,
+		            DimDate[Date] <= AsOf
+		        )
+		    )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 0aee20ac-3ea9-57a3-98c7-06736e9b7083
+		description = "Sales from January through the month in view, capped at the latest actual month."
+
+	measure 'Retail Sales YTD PY' = ```
+		VAR ContextMax =
+		    MAX ( DimDate[Date] )
+		VAR LastActual = [Last Actual Date]
+		VAR AsOf =
+		    MIN ( ContextMax, LastActual )
+		VAR YearStart =
+		    DATE ( YEAR ( AsOf ) - 1, 1, 1 )
+		VAR YearEnd =
+		    EDATE ( AsOf, -12 )
+		RETURN
+		    IF (
+		        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+		        BLANK (),
+		        CALCULATE (
+		            [Retail Sales NSA],
+		            REMOVEFILTERS ( DimDate ),
+		            DimDate[Date] >= YearStart,
+		            DimDate[Date] <= YearEnd
+		        )
+		    )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 964242cc-956f-5de8-aff9-63ff00effe22
+		description = "Year-to-date sales for the same months one year earlier."
+
+	measure 'YTD YoY Growth' = ```
+		DIVIDE ( [Retail Sales YTD] - [Retail Sales YTD PY], [Retail Sales YTD PY] )
+		```
+		formatString: "0.0%"
+		displayFolder: "Growth"
+		lineageTag: ea31f165-86eb-5799-94ef-cc25337e9d80
+		description = "Year-to-date change versus the same months last year."
+
+	measure 'TTM Sales' = ```
+		VAR ContextMax =
+		    MAX ( DimDate[Date] )
+		VAR LastActual = [Last Actual Date]
+		VAR AsOf =
+		    MIN ( ContextMax, LastActual )
+		VAR StartDate =
+		    EDATE ( AsOf, -11 )
+		RETURN
+		    IF (
+		        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+		        BLANK (),
+		        CALCULATE (
+		            [Retail Sales NSA],
+		            REMOVEFILTERS ( DimDate ),
+		            DimDate[Date] >= StartDate,
+		            DimDate[Date] <= AsOf
+		        )
+		    )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 5aaf2c85-bc4c-5503-9fd1-9093e6344f5a
+		description = "Sales over the 12 months ending with the month in view."
+
+	measure 'TTM Sales PY' = ```
+		VAR ContextMax =
+		    MAX ( DimDate[Date] )
+		VAR LastActual = [Last Actual Date]
+		VAR AsOf =
+		    EDATE ( MIN ( ContextMax, LastActual ), -12 )
+		VAR StartDate =
+		    EDATE ( AsOf, -11 )
+		RETURN
+		    IF (
+		        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+		        BLANK (),
+		        CALCULATE (
+		            [Retail Sales NSA],
+		            REMOVEFILTERS ( DimDate ),
+		            DimDate[Date] >= StartDate,
+		            DimDate[Date] <= AsOf
+		        )
+		    )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 9dc0a696-0d27-5ac0-ae4c-df5e32249eae
+		description = "The 12 months that ended one year before the month in view."
+
+	measure 'TTM YoY Growth' = ```
+		DIVIDE ( [TTM Sales] - [TTM Sales PY], [TTM Sales PY] )
+		```
+		formatString: "0.0%"
+		displayFolder: "Growth"
+		lineageTag: 08e19b53-042a-509e-8579-8c73b2099dd7
+		description = "Change in trailing-12-month sales versus the prior year."
+
+	measure 'Latest Month Sales' = ```
+		CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimDate ), DimDate[Date] = [Last Actual Date] )
+		```
+		formatString: "#,0"
+		displayFolder: "Latest month"
+		lineageTag: 1bdcbecd-5fe9-5e18-a6de-fba7b5a309a6
+		description = "Sales in the most recent published month, in millions of dollars."
+
+	measure 'Latest Month Sales PY' = ```
+		CALCULATE (
+		    [Retail Sales NSA],
+		    REMOVEFILTERS ( DimDate ),
+		    DimDate[Date] = EDATE ( [Last Actual Date], -12 )
+		)
+		```
+		formatString: "#,0"
+		displayFolder: "Latest month"
+		lineageTag: 94c1210a-20cb-5baf-9691-56b4e386e114
+		description = "Sales in the same month one year before the latest published month."
+
+	measure 'Latest Month YoY' = ```
+		DIVIDE ( [Latest Month Sales] - [Latest Month Sales PY], [Latest Month Sales PY] )
+		```
+		formatString: "0.0%"
+		displayFolder: "Latest month"
+		lineageTag: 9893f51b-098f-5e76-98ea-25a29b9272f0
+		description = "Latest published month versus the same month last year."
+
+	measure 'Latest Month Sales PM' = ```
+		CALCULATE (
+		    [Retail Sales NSA],
+		    REMOVEFILTERS ( DimDate ),
+		    DimDate[Date] = EDATE ( [Last Actual Date], -1 )
+		)
+		```
+		formatString: "#,0"
+		displayFolder: "Latest month"
+		lineageTag: 470e6b89-6aa0-5424-953c-542f3492b615
+		description = "Sales in the month before the latest published month."
+
+	measure 'Latest Month MoM' = ```
+		DIVIDE ( [Latest Month Sales] - [Latest Month Sales PM], [Latest Month Sales PM] )
+		```
+		formatString: "0.0%"
+		displayFolder: "Latest month"
+		lineageTag: ee699a34-79b3-5ccd-b044-c5c8c9945501
+		description = "Latest published month versus the month before it."
+
+	measure 'Latest Month Label' = ```
+		FORMAT ( [Last Actual Date], "MMMM YYYY" )
+		```
+		displayFolder: "Latest month"
+		lineageTag: 21e6babc-e91b-5a8b-b20d-b18abb83c1b4
+		description = "Name of the most recent published month."
+
+	measure 'Sector Share' = ```
+		DIVIDE ( [Retail Sales NSA], CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimSector ) ) )
+		```
+		formatString: "0.0%"
+		displayFolder: "Growth"
+		lineageTag: dee489a0-2388-5a56-86ef-74927f2b0a3c
+		description = "Share of sales versus all sectors in the current filter context."
+
+	measure 'TTM Sector Share' = ```
+		DIVIDE ( [TTM Sales], CALCULATE ( [TTM Sales], REMOVEFILTERS ( DimSector ) ) )
+		```
+		formatString: "0.0%"
+		displayFolder: "Growth"
+		lineageTag: 108fe4a4-c3fd-5a12-9305-35068ef2331a
+		description = "Share of trailing-12-month sales versus all sectors."
+
+	measure 'Sales NSA Last 8 Years' = ```
+		IF ( MAX ( DimDate[Date] ) >= EDATE ( [Last Actual Date], -95 ), [Retail Sales NSA] )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 3fe1575c-1793-5a8e-bbc0-83b8757597f0
+		description = "Not-seasonally-adjusted sales, shown only for the latest 8 years."
+
+	measure 'Sales SA Last 8 Years' = ```
+		IF ( MAX ( DimDate[Date] ) >= EDATE ( [Last Actual Date], -95 ), [Retail Sales SA] )
+		```
+		formatString: "#,0"
+		displayFolder: "Actuals"
+		lineageTag: 82ea17d0-3115-5147-847c-6c0530aaa33d
+		description = "Seasonally adjusted sales, shown only for the latest 8 years."
+
+	measure 'Use Sector Detail' = ```
+		COUNTROWS ( VALUES ( DimSector[SectorKey] ) )
+		    < CALCULATE ( COUNTROWS ( VALUES ( DimSector[SectorKey] ) ), REMOVEFILTERS ( DimSector ) )
+		```
+		formatString: "0"
+		displayFolder: "Accuracy"
+		lineageTag: b6dddcb6-1389-566a-95cf-47bc1f868639
+		isHidden
+		description = "Internal flag. True when the view is not every sector at once."
+
+	measure 'Forecast NSA' = ```
+		SUM ( FactForecast[ForecastNSA] )
+		```
+		formatString: "#,0.00"
+		displayFolder: "Forecast"
+		lineageTag: dee34cd6-70f7-5daa-92fb-eeee904abde8
+		description = "Sector sales forecast in millions of dollars. Sectors add up to the total."
+
+	measure 'Forecast Lower 80' = ```
+		IF (
+		    [Use Sector Detail] && HASONEVALUE ( DimSector[SectorKey] ),
+		    SUM ( FactForecast[Lower80] ),
+		    IF ( NOT [Use Sector Detail], SUM ( ForecastTotal[Lower80] ) )
+		)
+		```
+		formatString: "#,0.00"
+		displayFolder: "Forecast"
+		lineageTag: fdf835db-fde0-582b-972e-9ddee0b3042c
+		description = "Low end of the 80 percent forecast range. Blank when several, but not all, sectors are selected."
+
+	measure 'Forecast Upper 80' = ```
+		IF (
+		    [Use Sector Detail] && HASONEVALUE ( DimSector[SectorKey] ),
+		    SUM ( FactForecast[Upper80] ),
+		    IF ( NOT [Use Sector Detail], SUM ( ForecastTotal[Upper80] ) )
+		)
+		```
+		formatString: "#,0.00"
+		displayFolder: "Forecast"
+		lineageTag: c37bab89-410b-5374-8092-a6d8b2f111d5
+		description = "High end of the 80 percent forecast range. Blank when several, but not all, sectors are selected."
+
+	measure 'Forward 12 Forecast' = ```
+		VAR StartDate =
+		    EDATE ( [Last Actual Date], 1 )
+		VAR EndDate =
+		    EDATE ( [Last Actual Date], 12 )
+		RETURN
+		    CALCULATE (
+		        [Forecast NSA],
+		        REMOVEFILTERS ( DimDate ),
+		        DimDate[Date] >= StartDate,
+		        DimDate[Date] <= EndDate
+		    )
+		```
+		formatString: "#,0.00"
+		displayFolder: "Forecast"
+		lineageTag: c3d686be-8434-5566-b30e-c50c3d1d47ef
+		description = "Sum of the next 12 forecast months, in millions of dollars."
+
+	measure 'Prior 12 Actual' = ```
+		VAR EndDate = [Last Actual Date]
+		VAR StartDate =
+		    EDATE ( EndDate, -11 )
+		RETURN
+		    CALCULATE (
+		        [Retail Sales NSA],
+		        REMOVEFILTERS ( DimDate ),
+		        DimDate[Date] >= StartDate,
+		        DimDate[Date] <= EndDate
+		    )
+		```
+		formatString: "#,0"
+		displayFolder: "Forecast"
+		lineageTag: 8e1d8512-bfe3-5107-9b34-5222d029892f
+		description = "Sales over the 12 published months before the forecast starts."
+
+	measure 'Forward vs Prior 12' = ```
+		DIVIDE ( [Forward 12 Forecast] - [Prior 12 Actual], [Prior 12 Actual] )
+		```
+		formatString: "0.0%"
+		displayFolder: "Forecast"
+		lineageTag: a506e16a-d543-5ed0-b5a4-118f69e1bc00
+		description = "Next 12 forecast months versus the latest 12 actual months."
+
+	measure 'Forecast Outlook NSA' = ```
+		CALCULATE ( [Forecast NSA], DimDate[Date] > [Last Actual Date] )
+		```
+		formatString: "#,0.00"
+		displayFolder: "Forecast"
+		lineageTag: 433ec576-3292-50a6-b69b-b57a3ca16e7d
+		description = "Forecast for months after the latest actual. Blank on history."
+
+	measure 'Forecast Band Lower' = ```
+		CALCULATE ( [Forecast Lower 80], DimDate[Date] > [Last Actual Date] )
+		```
+		formatString: "#,0.00"
+		displayFolder: "Forecast"
+		lineageTag: ca7e1955-0580-5bbd-a501-ba95fdd5414c
+		description = "Low end of the 80 percent range on future months only."
+
+	measure 'Forecast Band Upper' = ```
+		CALCULATE ( [Forecast Upper 80], DimDate[Date] > [Last Actual Date] )
+		```
+		formatString: "#,0.00"
+		displayFolder: "Forecast"
+		lineageTag: 91f7ade9-881e-5521-b3a0-f78075bb7ae4
+		description = "High end of the 80 percent range on future months only."
+
+	measure 'Backtest Actual' = ```
+		IF ( [Use Sector Detail], SUM ( FactBacktest[ActualNSA] ), SUM ( BacktestTotal[ActualNSA] ) )
+		```
+		formatString: "#,0"
+		displayFolder: "Accuracy"
+		lineageTag: 95a21cc8-927e-5ffc-8437-91c21aebf78d
+		description = "Actual sales in the 12-month test window."
+
+	measure 'Backtest Forecast' = ```
+		IF ( [Use Sector Detail], SUM ( FactBacktest[ForecastNSA] ), SUM ( BacktestTotal[ForecastNSA] ) )
+		```
+		formatString: "#,0.00"
+		displayFolder: "Accuracy"
+		lineageTag: f0fe4bef-9c11-5e8f-b10c-aad5e93bc6b4
+		description = "Forecast made for the 12-month test window."
+
+	measure 'Backtest Naive' = ```
+		IF ( [Use Sector Detail], SUM ( FactBacktest[SeasonalNaiveNSA] ), SUM ( BacktestTotal[SeasonalNaiveNSA] ) )
+		```
+		formatString: "#,0"
+		displayFolder: "Accuracy"
+		lineageTag: 70b3091c-759d-55cf-8ea3-c6184f9930f6
+		description = "Same month last year, used as a simple comparison."
+
+	measure 'Backtest MAPE' = ```
+		IF (
+		    [Use Sector Detail],
+		    AVERAGEX (
+		        FactBacktest,
+		        DIVIDE ( ABS ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ), FactBacktest[ActualNSA] )
+		    ),
+		    AVERAGEX (
+		        BacktestTotal,
+		        DIVIDE ( ABS ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ), BacktestTotal[ActualNSA] )
+		    )
+		)
+		```
+		formatString: "0.00%"
+		displayFolder: "Accuracy"
+		lineageTag: 52ba3405-43c0-50d6-b931-423564dfbc69
+		description = "Average absolute percent miss across the test months."
+
+	measure 'Backtest WAPE' = ```
+		VAR UseDetail = [Use Sector Detail]
+		RETURN
+		    DIVIDE (
+		        IF (
+		            UseDetail,
+		            SUMX ( FactBacktest, ABS ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ) ),
+		            SUMX ( BacktestTotal, ABS ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ) )
+		        ),
+		        IF ( UseDetail, SUM ( FactBacktest[ActualNSA] ), SUM ( BacktestTotal[ActualNSA] ) )
+		    )
+		```
+		formatString: "0.00%"
+		displayFolder: "Accuracy"
+		lineageTag: 761571d4-6a5b-5637-a6fb-5eaaa3a3f757
+		description = "Total absolute miss divided by total actual sales in the test window."
+
+	measure 'Backtest RMSE' = ```
+		SQRT (
+		    IF (
+		        [Use Sector Detail],
+		        AVERAGEX ( FactBacktest, ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ) ^ 2 ),
+		        AVERAGEX ( BacktestTotal, ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ) ^ 2 )
+		    )
+		)
+		```
+		formatString: "#,0.00"
+		displayFolder: "Accuracy"
+		lineageTag: ebd18d2f-19c0-5997-be63-3ddc528dfa24
+		description = "Root mean squared error of the test, in millions of dollars."
+
+	measure 'Backtest MAE' = ```
+		IF (
+		    [Use Sector Detail],
+		    AVERAGEX ( FactBacktest, ABS ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ) ),
+		    AVERAGEX ( BacktestTotal, ABS ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ) )
+		)
+		```
+		formatString: "#,0.00"
+		displayFolder: "Accuracy"
+		lineageTag: 407a6e2f-7a0f-5c41-9d91-69732e0a1c52
+		description = "Average absolute miss in the test, in millions of dollars."
+
+	measure 'Backtest Bias' = ```
+		IF (
+		    [Use Sector Detail],
+		    AVERAGEX ( FactBacktest, FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ),
+		    AVERAGEX ( BacktestTotal, BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] )
+		)
+		```
+		formatString: "#,0.00"
+		displayFolder: "Accuracy"
+		lineageTag: 3b2c50cb-cccb-5375-8f9f-98c783af3d48
+		description = "Average forecast minus actual in the test, in millions of dollars. Negative means the forecast ran low."
+
+	measure 'Backtest Naive MAPE' = ```
+		IF (
+		    [Use Sector Detail],
+		    AVERAGEX (
+		        FactBacktest,
+		        DIVIDE ( ABS ( FactBacktest[SeasonalNaiveNSA] - FactBacktest[ActualNSA] ), FactBacktest[ActualNSA] )
+		    ),
+		    AVERAGEX (
+		        BacktestTotal,
+		        DIVIDE (
+		            ABS ( BacktestTotal[SeasonalNaiveNSA] - BacktestTotal[ActualNSA] ),
+		            BacktestTotal[ActualNSA]
+		        )
+		    )
+		)
+		```
+		formatString: "0.00%"
+		displayFolder: "Accuracy"
+		lineageTag: 986f8335-b9fb-521a-8cfa-dc7196292b69
+		description = "Average absolute percent miss of a same-month-last-year guess."
+
+	measure 'Backtest Coverage' = ```
+		IF (
+		    [Use Sector Detail],
+		    AVERAGEX (
+		        FactBacktest,
+		        IF (
+		            FactBacktest[ActualNSA] >= FactBacktest[Lower80]
+		                && FactBacktest[ActualNSA] <= FactBacktest[Upper80],
+		            1,
+		            0
+		        )
+		    ),
+		    AVERAGEX (
+		        BacktestTotal,
+		        IF (
+		            BacktestTotal[ActualNSA] >= BacktestTotal[Lower80]
+		                && BacktestTotal[ActualNSA] <= BacktestTotal[Upper80],
+		            1,
+		            0
+		        )
+		    )
+		)
+		```
+		formatString: "0.0%"
+		displayFolder: "Accuracy"
+		lineageTag: a2e649e6-8c6c-5052-ac8a-701282cf5fd2
+		description = "Share of test months whose actual sales fell inside the 80 percent range."
+
+	measure 'Source Note' = ```
+		"U.S. Census Bureau monthly retail and food services sales, in millions of dollars. Not adjusted for inflation."
+		```
+		displayFolder: "Reference"
+		lineageTag: 19843b9e-d244-525f-8d8f-b56ae01e6e17
+		description = "Short source line for the report."
+
+	partition Metrics = m
+		mode: import
+		source =
+			let
+			    Source = #table(type table [MetricsKey = Int64.Type], {{1}})
+			in
+			    Source
+
+	annotation PBI_ResultType = Table
+

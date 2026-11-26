@@ -1,0 +1,143 @@
+table FactBacktest
+	lineageTag: 8b7d897b-10d6-5708-b36d-08563f7aa1a3
+	description = "Sector forecast compared with the latest 12 published months."
+
+	column Date
+		dataType: dateTime
+		formatString: "yyyy-mm-dd"
+		lineageTag: 1ecc9846-86d1-5a91-a52f-cd834b7a923c
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column SectorKey
+		dataType: string
+		lineageTag: 6daaf05f-d8a6-5952-8421-c4489568dd77
+		summarizeBy: none
+		sourceColumn: SectorKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column Horizon
+		dataType: int64
+		formatString: "0"
+		lineageTag: c31e65e9-3178-52d5-8ea1-fa90f80016a9
+		summarizeBy: none
+		sourceColumn: Horizon
+
+		annotation SummarizationSetBy = Automatic
+
+	column ActualNSA
+		dataType: int64
+		formatString: "#,0"
+		lineageTag: 478a0896-5c0d-567b-91c4-2e2ec2e31606
+		summarizeBy: sum
+		sourceColumn: ActualNSA
+
+		annotation SummarizationSetBy = Automatic
+
+	column ForecastNSA
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: 59cb6e37-70a6-5a21-ad81-a5c31bcf4cf8
+		summarizeBy: sum
+		sourceColumn: ForecastNSA
+
+		annotation SummarizationSetBy = Automatic
+
+	column SeasonalNaiveNSA
+		dataType: int64
+		formatString: "#,0"
+		lineageTag: bf957546-696a-56ea-8a17-1bce99e8613e
+		summarizeBy: sum
+		sourceColumn: SeasonalNaiveNSA
+
+		annotation SummarizationSetBy = Automatic
+
+	column Lower80
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: d6905458-b271-51c5-9367-d71cba615a27
+		summarizeBy: none
+		sourceColumn: Lower80
+
+		annotation SummarizationSetBy = Automatic
+
+	column Upper80
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: bcea07d7-ac7d-5c9d-9617-fb742bb893e3
+		summarizeBy: none
+		sourceColumn: Upper80
+
+		annotation SummarizationSetBy = Automatic
+
+	column ReconcileFactor
+		dataType: double
+		formatString: "0.000000"
+		lineageTag: 5cdf16ac-21df-5559-9c3a-7027ab11d5d0
+		summarizeBy: none
+		sourceColumn: ReconcileFactor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Error
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: b2c7d9b7-8e90-53f9-8900-55d635740747
+		summarizeBy: sum
+		sourceColumn: Error
+
+		annotation SummarizationSetBy = Automatic
+
+	column AbsError
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: eacd1c7b-a0f4-5d17-9a0b-1af600bb0f92
+		summarizeBy: sum
+		sourceColumn: AbsError
+
+		annotation SummarizationSetBy = Automatic
+
+	column AbsPctError
+		dataType: double
+		formatString: "0.00%"
+		lineageTag: 753d1c64-3a86-5d63-bb65-47c427a7888e
+		summarizeBy: none
+		sourceColumn: AbsPctError
+
+		annotation SummarizationSetBy = Automatic
+
+	column Model
+		dataType: string
+		lineageTag: edb951f6-bc19-5e94-b0aa-fb5a6213ef64
+		summarizeBy: none
+		sourceColumn: Model
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactBacktest = m
+		mode: import
+		source =
+			fnLocalCsv(
+			    "fact_backtest.csv",
+			    {
+			        {"Date", type date},
+			        {"SectorKey", type text},
+			        {"Horizon", Int64.Type},
+			        {"ActualNSA", Int64.Type},
+			        {"ForecastNSA", type number},
+			        {"SeasonalNaiveNSA", Int64.Type},
+			        {"Lower80", type number},
+			        {"Upper80", type number},
+			        {"ReconcileFactor", type number},
+			        {"Error", type number},
+			        {"AbsError", type number},
+			        {"AbsPctError", type number},
+			        {"Model", type text}
+			    }
+			)
+
+	annotation PBI_ResultType = Table
+

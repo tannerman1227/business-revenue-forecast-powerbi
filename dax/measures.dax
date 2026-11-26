@@ -1,420 +1,361 @@
-// Vantage Process Group
-// Measure table: _Measures
-//
-// Time intelligence runs on dim_date[Date]. The fact tables store one
-// row per month on the first of that month, so put month, quarter, or
-// year on the axis rather than day.
-//
-// Budget, forecast, and accuracy measures read fact_budget_forecast.
-// Explicit scenario measures clear a scenario slicer. Forecast Plan
-// Revenue does not, so it can be plotted with Scenario on the axis.
+//// Retail Sales NSA | Actuals | #,0 | Monthly sales, not seasonally adjusted, in millions of dollars.
+Retail Sales NSA =
+SUM ( FactRetailSales[SalesNSA] )
 
+//// Retail Sales SA | Actuals | #,0 | Monthly sales, seasonally adjusted, in millions of dollars.
+Retail Sales SA =
+SUM ( FactRetailSales[SalesSA] )
 
-// Revenue
-// ------------------------------------------------------------
-// Recognized revenue. Actuals only. Forecast scenarios are a separate fact.
-// Format: $#,0;($#,0)
-Revenue =
-    SUM ( fact_revenue_actuals[Revenue] )
+//// Retail Sales NSA PY | Actuals | #,0 | Not-seasonally-adjusted sales shifted back 12 months.
+Retail Sales NSA PY =
+VAR Shifted =
+    SELECTCOLUMNS ( VALUES ( DimDate[Date] ), "Date", EDATE ( DimDate[Date], -12 ) )
+RETURN
+    CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimDate ), TREATAS ( Shifted, DimDate[Date] ) )
 
-// Year-to-date revenue through the last visible date. Fiscal year equals the calendar year.
-// Format: $#,0;($#,0)
-Revenue YTD =
-    TOTALYTD ( [Revenue], dim_date[Date] )
+//// Retail Sales NSA PM | Actuals | #,0 | Not-seasonally-adjusted sales shifted back 1 month.
+Retail Sales NSA PM =
+VAR Shifted =
+    SELECTCOLUMNS ( VALUES ( DimDate[Date] ), "Date", EDATE ( DimDate[Date], -1 ) )
+RETURN
+    CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimDate ), TREATAS ( Shifted, DimDate[Date] ) )
 
-// Revenue in the same period last year.
-// Format: $#,0;($#,0)
-Revenue PY =
-    CALCULATE ( [Revenue], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+//// YoY Growth | Growth | 0.0% | Change versus the same months last year.
+YoY Growth =
+DIVIDE ( [Retail Sales NSA] - [Retail Sales NSA PY], [Retail Sales NSA PY] )
 
-// Prior-year year-to-date revenue, aligned to the same elapsed period.
-// Format: $#,0;($#,0)
-Revenue YTD PY =
-    CALCULATE ( [Revenue YTD], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+//// MoM Growth | Growth | 0.0% | Change versus the prior month.
+MoM Growth =
+DIVIDE ( [Retail Sales NSA] - [Retail Sales NSA PM], [Retail Sales NSA PM] )
 
-// Absolute change in revenue versus the same period last year.
-// Format: $#,0;($#,0)
-Revenue YoY $ =
-    [Revenue] - [Revenue PY]
+//// YoY Change | Growth | #,0 | Dollar change versus the same months last year, in millions.
+YoY Change =
+[Retail Sales NSA] - [Retail Sales NSA PY]
 
-// Percent change in revenue versus the same period last year.
-// Format: 0.0%
-Revenue YoY % =
-    DIVIDE ( [Revenue YoY $], [Revenue PY] )
+//// MoM Change | Growth | #,0 | Dollar change versus the prior month, in millions.
+MoM Change =
+[Retail Sales NSA] - [Retail Sales NSA PM]
 
-// Percent change versus the prior month. Read it on a month axis.
-// Format: 0.0%
-Revenue MoM % =
-    VAR PriorMonth =
-        CALCULATE ( [Revenue], DATEADD ( dim_date[Date], -1, MONTH ) )
-    RETURN
-        DIVIDE ( [Revenue] - PriorMonth, PriorMonth )
+//// Last Actual Date | Latest month | yyyy-mm-dd | Most recent month that has published sales.
+Last Actual Date =
+CALCULATE ( MAX ( FactRetailSales[Date] ), REMOVEFILTERS ( DimDate ) )
 
-// Sum of revenue over the three months ending at the last visible date.
-// Format: $#,0;($#,0)
-Revenue Rolling 3M =
-    CALCULATE (
-        [Revenue],
-        DATESINPERIOD ( dim_date[Date], MAX ( dim_date[Date] ), -3, MONTH )
-    )
-
-// Average monthly revenue over the trailing three months. The divisor is the number of months present, so FY2022 does not divide a short window by three.
-// Format: $#,0;($#,0)
-Revenue Rolling 3M Avg =
-    VAR EndDate = MAX ( dim_date[Date] )
-    VAR Window =
-        DATESINPERIOD ( dim_date[Date], EndDate, -3, MONTH )
-    VAR Months =
-        CALCULATE ( DISTINCTCOUNT ( dim_date[YearMonth] ), Window )
-    RETURN
-        DIVIDE ( CALCULATE ( [Revenue], Window ), Months )
-
-// Trailing twelve-month revenue.
-// Format: $#,0;($#,0)
-Revenue Rolling 12M =
-    CALCULATE (
-        [Revenue],
-        DATESINPERIOD ( dim_date[Date], MAX ( dim_date[Date] ), -12, MONTH )
-    )
-
-
-// Margin
-// ------------------------------------------------------------
-// Cost of goods sold on actuals.
-// Format: $#,0;($#,0)
-COGS =
-    SUM ( fact_revenue_actuals[COGS] )
-
-// Revenue minus COGS. Calculated, not taken from the stored column, so the identity cannot drift.
-// Format: $#,0;($#,0)
-Gross Profit =
-    [Revenue] - [COGS]
-
-// Gross profit as a share of revenue.
-// Format: 0.0%
-Gross Margin % =
-    DIVIDE ( [Gross Profit], [Revenue] )
-
-// Operating expense allocated to the fact grain. Regional intensity is applied upstream of this measure.
-// Format: $#,0;($#,0)
-OpEx =
-    SUM ( fact_revenue_actuals[OpEx] )
-
-// Operating expense ratio.
-// Format: 0.0%
-OpEx % of Revenue =
-    DIVIDE ( [OpEx], [Revenue] )
-
-// Gross profit minus operating expense.
-// Format: $#,0;($#,0)
-EBITDA =
-    [Gross Profit] - [OpEx]
-
-// EBITDA as a share of revenue.
-// Format: 0.0%
-EBITDA Margin % =
-    DIVIDE ( [EBITDA], [Revenue] )
-
-// Gross profit in the same period last year.
-// Format: $#,0;($#,0)
-Gross Profit PY =
-    CALCULATE ( [Gross Profit], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
-
-// Gross margin in the same period last year.
-// Format: 0.0%
-Gross Margin % PY =
-    CALCULATE ( [Gross Margin %], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
-
-// Year-over-year change in gross margin, in basis points.
-// Format: +0;-0;0
-Gross Margin YoY bps =
-    ( [Gross Margin %] - [Gross Margin % PY] ) * 10000
-
-// Operating expense in the same period last year.
-// Format: $#,0;($#,0)
-OpEx PY =
-    CALCULATE ( [OpEx], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
-
-// EBITDA in the same period last year.
-// Format: $#,0;($#,0)
-EBITDA PY =
-    CALCULATE ( [EBITDA], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
-
-// Year-to-date EBITDA.
-// Format: $#,0;($#,0)
-EBITDA YTD =
-    TOTALYTD ( [EBITDA], dim_date[Date] )
-
-// Percent change in EBITDA versus the same period last year.
-// Format: 0.0%
-EBITDA YoY % =
-    DIVIDE ( [EBITDA] - [EBITDA PY], [EBITDA PY] )
-
-// EBITDA margin in the same period last year.
-// Format: 0.0%
-EBITDA Margin % PY =
-    CALCULATE ( [EBITDA Margin %], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
-
-// Year-over-year change in EBITDA margin, in basis points.
-// Format: +0;-0;0
-EBITDA Margin YoY bps =
-    ( [EBITDA Margin %] - [EBITDA Margin % PY] ) * 10000
-
-
-// Budget
-// ------------------------------------------------------------
-// Annual budget revenue. Ignores a scenario slicer so the comparison stays on screen.
-// Format: $#,0;($#,0)
-Budget Revenue =
-    CALCULATE (
-        SUM ( fact_budget_forecast[Revenue] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Budget"
-    )
-
-// Budget cost of goods sold.
-// Format: $#,0;($#,0)
-Budget COGS =
-    CALCULATE (
-        SUM ( fact_budget_forecast[COGS] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Budget"
-    )
-
-// Budget gross profit.
-// Format: $#,0;($#,0)
-Budget Gross Profit =
-    [Budget Revenue] - [Budget COGS]
-
-// Budget gross margin.
-// Format: 0.0%
-Budget Gross Margin % =
-    DIVIDE ( [Budget Gross Profit], [Budget Revenue] )
-
-// Budget operating expense.
-// Format: $#,0;($#,0)
-Budget OpEx =
-    CALCULATE (
-        SUM ( fact_budget_forecast[OpEx] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Budget"
-    )
-
-// Budget EBITDA.
-// Format: $#,0;($#,0)
-Budget EBITDA =
-    [Budget Gross Profit] - [Budget OpEx]
-
-// Budget EBITDA margin.
-// Format: 0.0%
-Budget EBITDA Margin % =
-    DIVIDE ( [Budget EBITDA], [Budget Revenue] )
-
-// Revenue minus budget. Positive is a beat.
-// Format: $#,0;($#,0)
-Revenue vs Budget $ =
-    [Revenue] - [Budget Revenue]
-
-// Revenue variance as a percent of budget.
-// Format: 0.0%
-Revenue vs Budget % =
-    DIVIDE ( [Revenue vs Budget $], [Budget Revenue] )
-
-// Gross-margin variance versus budget, in basis points.
-// Format: +0;-0;0
-Gross Margin vs Budget bps =
-    ( [Gross Margin %] - [Budget Gross Margin %] ) * 10000
-
-// Operating expense minus budget. Negative means spending came in under plan.
-// Format: $#,0;($#,0)
-OpEx vs Budget $ =
-    [OpEx] - [Budget OpEx]
-
-// EBITDA minus budget. Positive is a beat.
-// Format: $#,0;($#,0)
-EBITDA vs Budget $ =
-    [EBITDA] - [Budget EBITDA]
-
-// EBITDA variance as a percent of budget.
-// Format: 0.0%
-EBITDA vs Budget % =
-    DIVIDE ( [EBITDA vs Budget $], [Budget EBITDA] )
-
-// EBITDA-margin variance versus budget, in basis points.
-// Format: +0;-0;0
-EBITDA Margin vs Budget bps =
-    ( [EBITDA Margin %] - [Budget EBITDA Margin %] ) * 10000
-
-
-// Forecast
-// ------------------------------------------------------------
-// FY2026 base-case revenue from the Holt-Winters point forecast.
-// Format: $#,0;($#,0)
-Forecast Revenue Base =
-    CALCULATE (
-        SUM ( fact_budget_forecast[Revenue] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Forecast - Base"
-    )
-
-// FY2026 upside revenue, the 90th percentile of simulated full-year revenue.
-// Format: $#,0;($#,0)
-Forecast Revenue Upside =
-    CALCULATE (
-        SUM ( fact_budget_forecast[Revenue] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Forecast - Upside"
-    )
-
-// FY2026 downside revenue, the 10th percentile of simulated full-year revenue.
-// Format: $#,0;($#,0)
-Forecast Revenue Downside =
-    CALCULATE (
-        SUM ( fact_budget_forecast[Revenue] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Forecast - Downside"
-    )
-
-// Base-case gross profit.
-// Format: $#,0;($#,0)
-Forecast Gross Profit Base =
-    CALCULATE (
-        SUM ( fact_budget_forecast[GrossProfit] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Forecast - Base"
-    )
-
-// Base-case operating expense.
-// Format: $#,0;($#,0)
-Forecast OpEx Base =
-    CALCULATE (
-        SUM ( fact_budget_forecast[OpEx] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Forecast - Base"
-    )
-
-// Base-case EBITDA.
-// Format: $#,0;($#,0)
-Forecast EBITDA Base =
-    [Forecast Gross Profit Base] - [Forecast OpEx Base]
-
-// Upside EBITDA.
-// Format: $#,0;($#,0)
-Forecast EBITDA Upside =
-    CALCULATE (
-        SUM ( fact_budget_forecast[GrossProfit] ) - SUM ( fact_budget_forecast[OpEx] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Forecast - Upside"
-    )
-
-// Downside EBITDA.
-// Format: $#,0;($#,0)
-Forecast EBITDA Downside =
-    CALCULATE (
-        SUM ( fact_budget_forecast[GrossProfit] ) - SUM ( fact_budget_forecast[OpEx] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Forecast - Downside"
-    )
-
-// Base-case gross margin.
-// Format: 0.0%
-Forecast Gross Margin % Base =
-    DIVIDE ( [Forecast Gross Profit Base], [Forecast Revenue Base] )
-
-// Base-case EBITDA margin.
-// Format: 0.0%
-Forecast EBITDA Margin % Base =
-    DIVIDE ( [Forecast EBITDA Base], [Forecast Revenue Base] )
-
-// Actual revenue through FY2025 and the base forecast in FY2026. Use it on a month or quarter axis. A grand total stays on actuals, because the stage is no longer unique.
-// Format: $#,0;($#,0)
-Revenue Actual or Forecast =
+//// Retail Sales YTD | Actuals | #,0 | Sales from January through the month in view, capped at the latest actual month.
+Retail Sales YTD =
+VAR ContextMax =
+    MAX ( DimDate[Date] )
+VAR LastActual = [Last Actual Date]
+VAR AsOf =
+    MIN ( ContextMax, LastActual )
+VAR YearStart =
+    DATE ( YEAR ( AsOf ), 1, 1 )
+RETURN
     IF (
-        SELECTEDVALUE ( dim_date[CalendarStage] ) = "Forecast Horizon",
-        [Forecast Revenue Base],
-        [Revenue]
+        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+        BLANK (),
+        CALCULATE (
+            [Retail Sales NSA],
+            REMOVEFILTERS ( DimDate ),
+            DimDate[Date] >= YearStart,
+            DimDate[Date] <= AsOf
+        )
     )
 
-// Base-case FY2026 revenue, pinned to the year so a multi-year page still shows the plan.
-// Format: $#,0;($#,0)
-FY2026 Base Revenue =
-    CALCULATE ( [Forecast Revenue Base], dim_date[Year] = 2026 )
+//// Retail Sales YTD PY | Actuals | #,0 | Year-to-date sales for the same months one year earlier.
+Retail Sales YTD PY =
+VAR ContextMax =
+    MAX ( DimDate[Date] )
+VAR LastActual = [Last Actual Date]
+VAR AsOf =
+    MIN ( ContextMax, LastActual )
+VAR YearStart =
+    DATE ( YEAR ( AsOf ) - 1, 1, 1 )
+VAR YearEnd =
+    EDATE ( AsOf, -12 )
+RETURN
+    IF (
+        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+        BLANK (),
+        CALCULATE (
+            [Retail Sales NSA],
+            REMOVEFILTERS ( DimDate ),
+            DimDate[Date] >= YearStart,
+            DimDate[Date] <= YearEnd
+        )
+    )
 
-// Official FY2026 budget revenue.
-// Format: $#,0;($#,0)
-FY2026 Budget Revenue =
-    CALCULATE ( [Budget Revenue], dim_date[Year] = 2026 )
+//// YTD YoY Growth | Growth | 0.0% | Year-to-date change versus the same months last year.
+YTD YoY Growth =
+DIVIDE ( [Retail Sales YTD] - [Retail Sales YTD PY], [Retail Sales YTD PY] )
 
-// Upside FY2026 revenue.
-// Format: $#,0;($#,0)
-FY2026 Upside Revenue =
-    CALCULATE ( [Forecast Revenue Upside], dim_date[Year] = 2026 )
+//// TTM Sales | Actuals | #,0 | Sales over the 12 months ending with the month in view.
+TTM Sales =
+VAR ContextMax =
+    MAX ( DimDate[Date] )
+VAR LastActual = [Last Actual Date]
+VAR AsOf =
+    MIN ( ContextMax, LastActual )
+VAR StartDate =
+    EDATE ( AsOf, -11 )
+RETURN
+    IF (
+        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+        BLANK (),
+        CALCULATE (
+            [Retail Sales NSA],
+            REMOVEFILTERS ( DimDate ),
+            DimDate[Date] >= StartDate,
+            DimDate[Date] <= AsOf
+        )
+    )
 
-// Downside FY2026 revenue.
-// Format: $#,0;($#,0)
-FY2026 Downside Revenue =
-    CALCULATE ( [Forecast Revenue Downside], dim_date[Year] = 2026 )
+//// TTM Sales PY | Actuals | #,0 | The 12 months that ended one year before the month in view.
+TTM Sales PY =
+VAR ContextMax =
+    MAX ( DimDate[Date] )
+VAR LastActual = [Last Actual Date]
+VAR AsOf =
+    EDATE ( MIN ( ContextMax, LastActual ), -12 )
+VAR StartDate =
+    EDATE ( AsOf, -11 )
+RETURN
+    IF (
+        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+        BLANK (),
+        CALCULATE (
+            [Retail Sales NSA],
+            REMOVEFILTERS ( DimDate ),
+            DimDate[Date] >= StartDate,
+            DimDate[Date] <= AsOf
+        )
+    )
 
-// Base-case FY2026 EBITDA.
-// Format: $#,0;($#,0)
-FY2026 Base EBITDA =
-    CALCULATE ( [Forecast EBITDA Base], dim_date[Year] = 2026 )
+//// TTM YoY Growth | Growth | 0.0% | Change in trailing-12-month sales versus the prior year.
+TTM YoY Growth =
+DIVIDE ( [TTM Sales] - [TTM Sales PY], [TTM Sales PY] )
 
-// Revenue on fact_budget_forecast for whatever scenario is in context. Use it when Scenario is on the axis.
-// Format: $#,0;($#,0)
-Forecast Plan Revenue =
-    SUM ( fact_budget_forecast[Revenue] )
+//// Latest Month Sales | Latest month | #,0 | Sales in the most recent published month, in millions of dollars.
+Latest Month Sales =
+CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimDate ), DimDate[Date] = [Last Actual Date] )
 
+//// Latest Month Sales PY | Latest month | #,0 | Sales in the same month one year before the latest published month.
+Latest Month Sales PY =
+CALCULATE (
+    [Retail Sales NSA],
+    REMOVEFILTERS ( DimDate ),
+    DimDate[Date] = EDATE ( [Last Actual Date], -12 )
+)
 
-// Accuracy
-// ------------------------------------------------------------
-// FY2025 revenue predicted at the December 2024 origin and allocated on the FY2024 mix.
-// Format: $#,0;($#,0)
-Backtest Revenue =
+//// Latest Month YoY | Latest month | 0.0% | Latest published month versus the same month last year.
+Latest Month YoY =
+DIVIDE ( [Latest Month Sales] - [Latest Month Sales PY], [Latest Month Sales PY] )
+
+//// Latest Month Sales PM | Latest month | #,0 | Sales in the month before the latest published month.
+Latest Month Sales PM =
+CALCULATE (
+    [Retail Sales NSA],
+    REMOVEFILTERS ( DimDate ),
+    DimDate[Date] = EDATE ( [Last Actual Date], -1 )
+)
+
+//// Latest Month MoM | Latest month | 0.0% | Latest published month versus the month before it.
+Latest Month MoM =
+DIVIDE ( [Latest Month Sales] - [Latest Month Sales PM], [Latest Month Sales PM] )
+
+//// Latest Month Label | Latest month | | Name of the most recent published month.
+Latest Month Label =
+FORMAT ( [Last Actual Date], "MMMM YYYY" )
+
+//// Sector Share | Growth | 0.0% | Share of sales versus all sectors in the current filter context.
+Sector Share =
+DIVIDE ( [Retail Sales NSA], CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimSector ) ) )
+
+//// TTM Sector Share | Growth | 0.0% | Share of trailing-12-month sales versus all sectors.
+TTM Sector Share =
+DIVIDE ( [TTM Sales], CALCULATE ( [TTM Sales], REMOVEFILTERS ( DimSector ) ) )
+
+//// Sales NSA Last 8 Years | Actuals | #,0 | Not-seasonally-adjusted sales, shown only for the latest 8 years.
+Sales NSA Last 8 Years =
+IF ( MAX ( DimDate[Date] ) >= EDATE ( [Last Actual Date], -95 ), [Retail Sales NSA] )
+
+//// Sales SA Last 8 Years | Actuals | #,0 | Seasonally adjusted sales, shown only for the latest 8 years.
+Sales SA Last 8 Years =
+IF ( MAX ( DimDate[Date] ) >= EDATE ( [Last Actual Date], -95 ), [Retail Sales SA] )
+
+//// Use Sector Detail | Accuracy | 0 | Internal flag. True when the view is not every sector at once.
+Use Sector Detail =
+COUNTROWS ( VALUES ( DimSector[SectorKey] ) )
+    < CALCULATE ( COUNTROWS ( VALUES ( DimSector[SectorKey] ) ), REMOVEFILTERS ( DimSector ) )
+
+//// Forecast NSA | Forecast | #,0.00 | Sector sales forecast in millions of dollars. Sectors add up to the total.
+Forecast NSA =
+SUM ( FactForecast[ForecastNSA] )
+
+//// Forecast Lower 80 | Forecast | #,0.00 | Low end of the 80 percent forecast range. Blank when several, but not all, sectors are selected.
+Forecast Lower 80 =
+IF (
+    [Use Sector Detail] && HASONEVALUE ( DimSector[SectorKey] ),
+    SUM ( FactForecast[Lower80] ),
+    IF ( NOT [Use Sector Detail], SUM ( ForecastTotal[Lower80] ) )
+)
+
+//// Forecast Upper 80 | Forecast | #,0.00 | High end of the 80 percent forecast range. Blank when several, but not all, sectors are selected.
+Forecast Upper 80 =
+IF (
+    [Use Sector Detail] && HASONEVALUE ( DimSector[SectorKey] ),
+    SUM ( FactForecast[Upper80] ),
+    IF ( NOT [Use Sector Detail], SUM ( ForecastTotal[Upper80] ) )
+)
+
+//// Forward 12 Forecast | Forecast | #,0.00 | Sum of the next 12 forecast months, in millions of dollars.
+Forward 12 Forecast =
+VAR StartDate =
+    EDATE ( [Last Actual Date], 1 )
+VAR EndDate =
+    EDATE ( [Last Actual Date], 12 )
+RETURN
     CALCULATE (
-        SUM ( fact_budget_forecast[Revenue] ),
-        REMOVEFILTERS ( Scenario ),
-        Scenario[Scenario] = "Backtest"
+        [Forecast NSA],
+        REMOVEFILTERS ( DimDate ),
+        DimDate[Date] >= StartDate,
+        DimDate[Date] <= EndDate
     )
 
-// Weighted absolute percent error at month grain. Dollar-weighted, which is the figure FP&A should quote. Matches the holdout WAPE at company level.
-// Format: 0.0%
-Forecast WAPE =
-    VAR Monthly =
-        ADDCOLUMNS (
-            SUMMARIZE ( dim_date, dim_date[YearMonthSort] ),
-            "@Act", CALCULATE ( [Revenue] ),
-            "@Fc", CALCULATE ( [Backtest Revenue] )
-        )
-    VAR Scored =
-        FILTER ( Monthly, NOT ISBLANK ( [@Act] ) && NOT ISBLANK ( [@Fc] ) && [@Act] <> 0 )
-    RETURN
-        DIVIDE ( SUMX ( Scored, ABS ( [@Act] - [@Fc] ) ), SUMX ( Scored, [@Act] ) )
+//// Prior 12 Actual | Forecast | #,0 | Sales over the 12 published months before the forecast starts.
+Prior 12 Actual =
+VAR EndDate = [Last Actual Date]
+VAR StartDate =
+    EDATE ( EndDate, -11 )
+RETURN
+    CALCULATE (
+        [Retail Sales NSA],
+        REMOVEFILTERS ( DimDate ),
+        DimDate[Date] >= StartDate,
+        DimDate[Date] <= EndDate
+    )
 
-// Mean absolute percent error at month grain. Each month counts equally, so December does not dominate.
-// Format: 0.0%
-Forecast MAPE =
-    VAR Monthly =
-        ADDCOLUMNS (
-            SUMMARIZE ( dim_date, dim_date[YearMonthSort] ),
-            "@Act", CALCULATE ( [Revenue] ),
-            "@Fc", CALCULATE ( [Backtest Revenue] )
-        )
-    VAR Scored =
-        FILTER ( Monthly, NOT ISBLANK ( [@Act] ) && NOT ISBLANK ( [@Fc] ) && [@Act] <> 0 )
-    RETURN
-        AVERAGEX ( Scored, DIVIDE ( ABS ( [@Act] - [@Fc] ), [@Act] ) )
+//// Forward vs Prior 12 | Forecast | 0.0% | Next 12 forecast months versus the latest 12 actual months.
+Forward vs Prior 12 =
+DIVIDE ( [Forward 12 Forecast] - [Prior 12 Actual], [Prior 12 Actual] )
 
-// Root mean squared error of monthly revenue, in dollars.
-// Format: $#,0;($#,0)
-Forecast RMSE =
-    VAR Monthly =
-        ADDCOLUMNS (
-            SUMMARIZE ( dim_date, dim_date[YearMonthSort] ),
-            "@Act", CALCULATE ( [Revenue] ),
-            "@Fc", CALCULATE ( [Backtest Revenue] )
+//// Forecast Outlook NSA | Forecast | #,0.00 | Forecast for months after the latest actual. Blank on history.
+Forecast Outlook NSA =
+CALCULATE ( [Forecast NSA], DimDate[Date] > [Last Actual Date] )
+
+//// Forecast Band Lower | Forecast | #,0.00 | Low end of the 80 percent range on future months only.
+Forecast Band Lower =
+CALCULATE ( [Forecast Lower 80], DimDate[Date] > [Last Actual Date] )
+
+//// Forecast Band Upper | Forecast | #,0.00 | High end of the 80 percent range on future months only.
+Forecast Band Upper =
+CALCULATE ( [Forecast Upper 80], DimDate[Date] > [Last Actual Date] )
+
+//// Backtest Actual | Accuracy | #,0 | Actual sales in the 12-month test window.
+Backtest Actual =
+IF ( [Use Sector Detail], SUM ( FactBacktest[ActualNSA] ), SUM ( BacktestTotal[ActualNSA] ) )
+
+//// Backtest Forecast | Accuracy | #,0.00 | Forecast made for the 12-month test window.
+Backtest Forecast =
+IF ( [Use Sector Detail], SUM ( FactBacktest[ForecastNSA] ), SUM ( BacktestTotal[ForecastNSA] ) )
+
+//// Backtest Naive | Accuracy | #,0 | Same month last year, used as a simple comparison.
+Backtest Naive =
+IF ( [Use Sector Detail], SUM ( FactBacktest[SeasonalNaiveNSA] ), SUM ( BacktestTotal[SeasonalNaiveNSA] ) )
+
+//// Backtest MAPE | Accuracy | 0.00% | Average absolute percent miss across the test months.
+Backtest MAPE =
+IF (
+    [Use Sector Detail],
+    AVERAGEX (
+        FactBacktest,
+        DIVIDE ( ABS ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ), FactBacktest[ActualNSA] )
+    ),
+    AVERAGEX (
+        BacktestTotal,
+        DIVIDE ( ABS ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ), BacktestTotal[ActualNSA] )
+    )
+)
+
+//// Backtest WAPE | Accuracy | 0.00% | Total absolute miss divided by total actual sales in the test window.
+Backtest WAPE =
+VAR UseDetail = [Use Sector Detail]
+RETURN
+    DIVIDE (
+        IF (
+            UseDetail,
+            SUMX ( FactBacktest, ABS ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ) ),
+            SUMX ( BacktestTotal, ABS ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ) )
+        ),
+        IF ( UseDetail, SUM ( FactBacktest[ActualNSA] ), SUM ( BacktestTotal[ActualNSA] ) )
+    )
+
+//// Backtest RMSE | Accuracy | #,0.00 | Root mean squared error of the test, in millions of dollars.
+Backtest RMSE =
+SQRT (
+    IF (
+        [Use Sector Detail],
+        AVERAGEX ( FactBacktest, ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ) ^ 2 ),
+        AVERAGEX ( BacktestTotal, ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ) ^ 2 )
+    )
+)
+
+//// Backtest MAE | Accuracy | #,0.00 | Average absolute miss in the test, in millions of dollars.
+Backtest MAE =
+IF (
+    [Use Sector Detail],
+    AVERAGEX ( FactBacktest, ABS ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ) ),
+    AVERAGEX ( BacktestTotal, ABS ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ) )
+)
+
+//// Backtest Bias | Accuracy | #,0.00 | Average forecast minus actual in the test, in millions of dollars. Negative means the forecast ran low.
+Backtest Bias =
+IF (
+    [Use Sector Detail],
+    AVERAGEX ( FactBacktest, FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ),
+    AVERAGEX ( BacktestTotal, BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] )
+)
+
+//// Backtest Naive MAPE | Accuracy | 0.00% | Average absolute percent miss of a same-month-last-year guess.
+Backtest Naive MAPE =
+IF (
+    [Use Sector Detail],
+    AVERAGEX (
+        FactBacktest,
+        DIVIDE ( ABS ( FactBacktest[SeasonalNaiveNSA] - FactBacktest[ActualNSA] ), FactBacktest[ActualNSA] )
+    ),
+    AVERAGEX (
+        BacktestTotal,
+        DIVIDE (
+            ABS ( BacktestTotal[SeasonalNaiveNSA] - BacktestTotal[ActualNSA] ),
+            BacktestTotal[ActualNSA]
         )
-    VAR Scored =
-        FILTER ( Monthly, NOT ISBLANK ( [@Act] ) && NOT ISBLANK ( [@Fc] ) )
-    RETURN
-        SQRT ( AVERAGEX ( Scored, ( [@Act] - [@Fc] ) ^ 2 ) )
+    )
+)
+
+//// Backtest Coverage | Accuracy | 0.0% | Share of test months whose actual sales fell inside the 80 percent range.
+Backtest Coverage =
+IF (
+    [Use Sector Detail],
+    AVERAGEX (
+        FactBacktest,
+        IF (
+            FactBacktest[ActualNSA] >= FactBacktest[Lower80]
+                && FactBacktest[ActualNSA] <= FactBacktest[Upper80],
+            1,
+            0
+        )
+    ),
+    AVERAGEX (
+        BacktestTotal,
+        IF (
+            BacktestTotal[ActualNSA] >= BacktestTotal[Lower80]
+                && BacktestTotal[ActualNSA] <= BacktestTotal[Upper80],
+            1,
+            0
+        )
+    )
+)
+
+//// Source Note | Reference | | Short source line for the report.
+Source Note =
+"U.S. Census Bureau monthly retail and food services sales, in millions of dollars. Not adjusted for inflation."

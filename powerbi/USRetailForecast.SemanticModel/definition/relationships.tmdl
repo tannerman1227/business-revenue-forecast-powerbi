@@ -1,0 +1,36 @@
+relationship ed556e03-cf3b-5587-9811-c17b042a2907
+	joinOnDateBehavior: datePartOnly
+	fromColumn: FactRetailSales.Date
+	toColumn: DimDate.Date
+
+relationship efe342fd-442a-58e4-bb45-d9f793949d8b
+	fromColumn: FactRetailSales.SectorKey
+	toColumn: DimSector.SectorKey
+
+relationship 54303b7e-3b27-5c32-80e3-dfedd1cd030a
+	joinOnDateBehavior: datePartOnly
+	fromColumn: FactForecast.Date
+	toColumn: DimDate.Date
+
+relationship 36d6184d-aedb-5198-bd3f-83832c169091
+	fromColumn: FactForecast.SectorKey
+	toColumn: DimSector.SectorKey
+
+relationship 4a2dc850-fb67-51d5-8655-8b12601ff968
+	joinOnDateBehavior: datePartOnly
+	fromColumn: FactBacktest.Date
+	toColumn: DimDate.Date
+
+relationship 28a2f0d2-e433-55ed-956d-7bd580c58470
+	fromColumn: FactBacktest.SectorKey
+	toColumn: DimSector.SectorKey
+
+relationship a7ac063e-d22c-5cb9-929e-57ce21dd83a8
+	joinOnDateBehavior: datePartOnly
+	fromColumn: ForecastTotal.Date
+	toColumn: DimDate.Date
+
+relationship a8e57591-5647-567d-a358-853e9ed52a75
+	joinOnDateBehavior: datePartOnly
+	fromColumn: BacktestTotal.Date
+	toColumn: DimDate.Date

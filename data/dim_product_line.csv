@@ -1,6 +1,0 @@
-ProductLineKey,ProductLine,ProductCode,RevenueType,UnitOfMeasure,PortfolioRole
-1,Process Equipment,EQUIP,Transactional,Systems,Core capital franchise
-2,Aftermarket Parts,PARTS,Recurring,Orders,Installed-base annuity
-3,Field Service Contracts,SVC,Recurring,Contracts,Contracted service annuity
-4,Industrial Software,SW,Recurring,Seats,Growth and margin engine
-5,Professional Services,PS,Project,Engagements,Implementation attach

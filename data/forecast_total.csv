@@ -1,0 +1,13 @@
+Date,Horizon,ForecastNSA,Lower80,Upper80,Model
+2026-11-01,1,762309.91,748269.6,778315.83,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2026-12-01,2,831191.62,812894.6,858337.9,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-01-01,3,689667.85,669169.69,721104.03,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-02-01,4,672599.94,647761.33,712686.65,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-03-01,5,769735.65,738311.43,821535.54,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-04-01,6,754573.26,717722.84,812113.47,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-05-01,7,798491.57,759420.57,865807.36,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-06-01,8,774831.93,734210.59,846506.87,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-07-01,9,783904.98,740568.62,862675.31,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-08-01,10,789613.88,745367.81,874216.36,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-09-01,11,747951.32,704831.56,832362.89,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
+2027-10-01,12,779785.22,732790.69,874543.11,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast"
