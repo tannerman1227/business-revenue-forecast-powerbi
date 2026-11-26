@@ -1,0 +1,361 @@
+//// Retail Sales NSA | Actuals | #,0 | Monthly sales, not seasonally adjusted, in millions of dollars.
+Retail Sales NSA =
+SUM ( FactRetailSales[SalesNSA] )
+
+//// Retail Sales SA | Actuals | #,0 | Monthly sales, seasonally adjusted, in millions of dollars.
+Retail Sales SA =
+SUM ( FactRetailSales[SalesSA] )
+
+//// Retail Sales NSA PY | Actuals | #,0 | Not-seasonally-adjusted sales shifted back 12 months.
+Retail Sales NSA PY =
+VAR Shifted =
+    SELECTCOLUMNS ( VALUES ( DimDate[Date] ), "Date", EDATE ( DimDate[Date], -12 ) )
+RETURN
+    CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimDate ), TREATAS ( Shifted, DimDate[Date] ) )
+
+//// Retail Sales NSA PM | Actuals | #,0 | Not-seasonally-adjusted sales shifted back 1 month.
+Retail Sales NSA PM =
+VAR Shifted =
+    SELECTCOLUMNS ( VALUES ( DimDate[Date] ), "Date", EDATE ( DimDate[Date], -1 ) )
+RETURN
+    CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimDate ), TREATAS ( Shifted, DimDate[Date] ) )
+
+//// YoY Growth | Growth | 0.0% | Change versus the same months last year.
+YoY Growth =
+DIVIDE ( [Retail Sales NSA] - [Retail Sales NSA PY], [Retail Sales NSA PY] )
+
+//// MoM Growth | Growth | 0.0% | Change versus the prior month.
+MoM Growth =
+DIVIDE ( [Retail Sales NSA] - [Retail Sales NSA PM], [Retail Sales NSA PM] )
+
+//// YoY Change | Growth | #,0 | Dollar change versus the same months last year, in millions.
+YoY Change =
+[Retail Sales NSA] - [Retail Sales NSA PY]
+
+//// MoM Change | Growth | #,0 | Dollar change versus the prior month, in millions.
+MoM Change =
+[Retail Sales NSA] - [Retail Sales NSA PM]
+
+//// Last Actual Date | Latest month | yyyy-mm-dd | Most recent month that has published sales.
+Last Actual Date =
+CALCULATE ( MAX ( FactRetailSales[Date] ), REMOVEFILTERS ( DimDate ) )
+
+//// Retail Sales YTD | Actuals | #,0 | Sales from January through the month in view, capped at the latest actual month.
+Retail Sales YTD =
+VAR ContextMax =
+    MAX ( DimDate[Date] )
+VAR LastActual = [Last Actual Date]
+VAR AsOf =
+    MIN ( ContextMax, LastActual )
+VAR YearStart =
+    DATE ( YEAR ( AsOf ), 1, 1 )
+RETURN
+    IF (
+        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+        BLANK (),
+        CALCULATE (
+            [Retail Sales NSA],
+            REMOVEFILTERS ( DimDate ),
+            DimDate[Date] >= YearStart,
+            DimDate[Date] <= AsOf
+        )
+    )
+
+//// Retail Sales YTD PY | Actuals | #,0 | Year-to-date sales for the same months one year earlier.
+Retail Sales YTD PY =
+VAR ContextMax =
+    MAX ( DimDate[Date] )
+VAR LastActual = [Last Actual Date]
+VAR AsOf =
+    MIN ( ContextMax, LastActual )
+VAR YearStart =
+    DATE ( YEAR ( AsOf ) - 1, 1, 1 )
+VAR YearEnd =
+    EDATE ( AsOf, -12 )
+RETURN
+    IF (
+        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+        BLANK (),
+        CALCULATE (
+            [Retail Sales NSA],
+            REMOVEFILTERS ( DimDate ),
+            DimDate[Date] >= YearStart,
+            DimDate[Date] <= YearEnd
+        )
+    )
+
+//// YTD YoY Growth | Growth | 0.0% | Year-to-date change versus the same months last year.
+YTD YoY Growth =
+DIVIDE ( [Retail Sales YTD] - [Retail Sales YTD PY], [Retail Sales YTD PY] )
+
+//// TTM Sales | Actuals | #,0 | Sales over the 12 months ending with the month in view.
+TTM Sales =
+VAR ContextMax =
+    MAX ( DimDate[Date] )
+VAR LastActual = [Last Actual Date]
+VAR AsOf =
+    MIN ( ContextMax, LastActual )
+VAR StartDate =
+    EDATE ( AsOf, -11 )
+RETURN
+    IF (
+        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+        BLANK (),
+        CALCULATE (
+            [Retail Sales NSA],
+            REMOVEFILTERS ( DimDate ),
+            DimDate[Date] >= StartDate,
+            DimDate[Date] <= AsOf
+        )
+    )
+
+//// TTM Sales PY | Actuals | #,0 | The 12 months that ended one year before the month in view.
+TTM Sales PY =
+VAR ContextMax =
+    MAX ( DimDate[Date] )
+VAR LastActual = [Last Actual Date]
+VAR AsOf =
+    EDATE ( MIN ( ContextMax, LastActual ), -12 )
+VAR StartDate =
+    EDATE ( AsOf, -11 )
+RETURN
+    IF (
+        HASONEVALUE ( DimDate[Date] ) && ContextMax > LastActual,
+        BLANK (),
+        CALCULATE (
+            [Retail Sales NSA],
+            REMOVEFILTERS ( DimDate ),
+            DimDate[Date] >= StartDate,
+            DimDate[Date] <= AsOf
+        )
+    )
+
+//// TTM YoY Growth | Growth | 0.0% | Change in trailing-12-month sales versus the prior year.
+TTM YoY Growth =
+DIVIDE ( [TTM Sales] - [TTM Sales PY], [TTM Sales PY] )
+
+//// Latest Month Sales | Latest month | #,0 | Sales in the most recent published month, in millions of dollars.
+Latest Month Sales =
+CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimDate ), DimDate[Date] = [Last Actual Date] )
+
+//// Latest Month Sales PY | Latest month | #,0 | Sales in the same month one year before the latest published month.
+Latest Month Sales PY =
+CALCULATE (
+    [Retail Sales NSA],
+    REMOVEFILTERS ( DimDate ),
+    DimDate[Date] = EDATE ( [Last Actual Date], -12 )
+)
+
+//// Latest Month YoY | Latest month | 0.0% | Latest published month versus the same month last year.
+Latest Month YoY =
+DIVIDE ( [Latest Month Sales] - [Latest Month Sales PY], [Latest Month Sales PY] )
+
+//// Latest Month Sales PM | Latest month | #,0 | Sales in the month before the latest published month.
+Latest Month Sales PM =
+CALCULATE (
+    [Retail Sales NSA],
+    REMOVEFILTERS ( DimDate ),
+    DimDate[Date] = EDATE ( [Last Actual Date], -1 )
+)
+
+//// Latest Month MoM | Latest month | 0.0% | Latest published month versus the month before it.
+Latest Month MoM =
+DIVIDE ( [Latest Month Sales] - [Latest Month Sales PM], [Latest Month Sales PM] )
+
+//// Latest Month Label | Latest month | | Name of the most recent published month.
+Latest Month Label =
+FORMAT ( [Last Actual Date], "MMMM YYYY" )
+
+//// Sector Share | Growth | 0.0% | Share of sales versus all sectors in the current filter context.
+Sector Share =
+DIVIDE ( [Retail Sales NSA], CALCULATE ( [Retail Sales NSA], REMOVEFILTERS ( DimSector ) ) )
+
+//// TTM Sector Share | Growth | 0.0% | Share of trailing-12-month sales versus all sectors.
+TTM Sector Share =
+DIVIDE ( [TTM Sales], CALCULATE ( [TTM Sales], REMOVEFILTERS ( DimSector ) ) )
+
+//// Sales NSA Last 8 Years | Actuals | #,0 | Not-seasonally-adjusted sales, shown only for the latest 8 years.
+Sales NSA Last 8 Years =
+IF ( MAX ( DimDate[Date] ) >= EDATE ( [Last Actual Date], -95 ), [Retail Sales NSA] )
+
+//// Sales SA Last 8 Years | Actuals | #,0 | Seasonally adjusted sales, shown only for the latest 8 years.
+Sales SA Last 8 Years =
+IF ( MAX ( DimDate[Date] ) >= EDATE ( [Last Actual Date], -95 ), [Retail Sales SA] )
+
+//// Use Sector Detail | Accuracy | 0 | Internal flag. True when the view is not every sector at once.
+Use Sector Detail =
+COUNTROWS ( VALUES ( DimSector[SectorKey] ) )
+    < CALCULATE ( COUNTROWS ( VALUES ( DimSector[SectorKey] ) ), REMOVEFILTERS ( DimSector ) )
+
+//// Forecast NSA | Forecast | #,0.00 | Sector sales forecast in millions of dollars. Sectors add up to the total.
+Forecast NSA =
+SUM ( FactForecast[ForecastNSA] )
+
+//// Forecast Lower 80 | Forecast | #,0.00 | Low end of the 80 percent forecast range. Blank when several, but not all, sectors are selected.
+Forecast Lower 80 =
+IF (
+    [Use Sector Detail] && HASONEVALUE ( DimSector[SectorKey] ),
+    SUM ( FactForecast[Lower80] ),
+    IF ( NOT [Use Sector Detail], SUM ( ForecastTotal[Lower80] ) )
+)
+
+//// Forecast Upper 80 | Forecast | #,0.00 | High end of the 80 percent forecast range. Blank when several, but not all, sectors are selected.
+Forecast Upper 80 =
+IF (
+    [Use Sector Detail] && HASONEVALUE ( DimSector[SectorKey] ),
+    SUM ( FactForecast[Upper80] ),
+    IF ( NOT [Use Sector Detail], SUM ( ForecastTotal[Upper80] ) )
+)
+
+//// Forward 12 Forecast | Forecast | #,0.00 | Sum of the next 12 forecast months, in millions of dollars.
+Forward 12 Forecast =
+VAR StartDate =
+    EDATE ( [Last Actual Date], 1 )
+VAR EndDate =
+    EDATE ( [Last Actual Date], 12 )
+RETURN
+    CALCULATE (
+        [Forecast NSA],
+        REMOVEFILTERS ( DimDate ),
+        DimDate[Date] >= StartDate,
+        DimDate[Date] <= EndDate
+    )
+
+//// Prior 12 Actual | Forecast | #,0 | Sales over the 12 published months before the forecast starts.
+Prior 12 Actual =
+VAR EndDate = [Last Actual Date]
+VAR StartDate =
+    EDATE ( EndDate, -11 )
+RETURN
+    CALCULATE (
+        [Retail Sales NSA],
+        REMOVEFILTERS ( DimDate ),
+        DimDate[Date] >= StartDate,
+        DimDate[Date] <= EndDate
+    )
+
+//// Forward vs Prior 12 | Forecast | 0.0% | Next 12 forecast months versus the latest 12 actual months.
+Forward vs Prior 12 =
+DIVIDE ( [Forward 12 Forecast] - [Prior 12 Actual], [Prior 12 Actual] )
+
+//// Forecast Outlook NSA | Forecast | #,0.00 | Forecast for months after the latest actual. Blank on history.
+Forecast Outlook NSA =
+CALCULATE ( [Forecast NSA], DimDate[Date] > [Last Actual Date] )
+
+//// Forecast Band Lower | Forecast | #,0.00 | Low end of the 80 percent range on future months only.
+Forecast Band Lower =
+CALCULATE ( [Forecast Lower 80], DimDate[Date] > [Last Actual Date] )
+
+//// Forecast Band Upper | Forecast | #,0.00 | High end of the 80 percent range on future months only.
+Forecast Band Upper =
+CALCULATE ( [Forecast Upper 80], DimDate[Date] > [Last Actual Date] )
+
+//// Backtest Actual | Accuracy | #,0 | Actual sales in the 12-month test window.
+Backtest Actual =
+IF ( [Use Sector Detail], SUM ( FactBacktest[ActualNSA] ), SUM ( BacktestTotal[ActualNSA] ) )
+
+//// Backtest Forecast | Accuracy | #,0.00 | Forecast made for the 12-month test window.
+Backtest Forecast =
+IF ( [Use Sector Detail], SUM ( FactBacktest[ForecastNSA] ), SUM ( BacktestTotal[ForecastNSA] ) )
+
+//// Backtest Naive | Accuracy | #,0 | Same month last year, used as a simple comparison.
+Backtest Naive =
+IF ( [Use Sector Detail], SUM ( FactBacktest[SeasonalNaiveNSA] ), SUM ( BacktestTotal[SeasonalNaiveNSA] ) )
+
+//// Backtest MAPE | Accuracy | 0.00% | Average absolute percent miss across the test months.
+Backtest MAPE =
+IF (
+    [Use Sector Detail],
+    AVERAGEX (
+        FactBacktest,
+        DIVIDE ( ABS ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ), FactBacktest[ActualNSA] )
+    ),
+    AVERAGEX (
+        BacktestTotal,
+        DIVIDE ( ABS ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ), BacktestTotal[ActualNSA] )
+    )
+)
+
+//// Backtest WAPE | Accuracy | 0.00% | Total absolute miss divided by total actual sales in the test window.
+Backtest WAPE =
+VAR UseDetail = [Use Sector Detail]
+RETURN
+    DIVIDE (
+        IF (
+            UseDetail,
+            SUMX ( FactBacktest, ABS ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ) ),
+            SUMX ( BacktestTotal, ABS ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ) )
+        ),
+        IF ( UseDetail, SUM ( FactBacktest[ActualNSA] ), SUM ( BacktestTotal[ActualNSA] ) )
+    )
+
+//// Backtest RMSE | Accuracy | #,0.00 | Root mean squared error of the test, in millions of dollars.
+Backtest RMSE =
+SQRT (
+    IF (
+        [Use Sector Detail],
+        AVERAGEX ( FactBacktest, ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ) ^ 2 ),
+        AVERAGEX ( BacktestTotal, ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ) ^ 2 )
+    )
+)
+
+//// Backtest MAE | Accuracy | #,0.00 | Average absolute miss in the test, in millions of dollars.
+Backtest MAE =
+IF (
+    [Use Sector Detail],
+    AVERAGEX ( FactBacktest, ABS ( FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ) ),
+    AVERAGEX ( BacktestTotal, ABS ( BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] ) )
+)
+
+//// Backtest Bias | Accuracy | #,0.00 | Average forecast minus actual in the test, in millions of dollars. Negative means the forecast ran low.
+Backtest Bias =
+IF (
+    [Use Sector Detail],
+    AVERAGEX ( FactBacktest, FactBacktest[ForecastNSA] - FactBacktest[ActualNSA] ),
+    AVERAGEX ( BacktestTotal, BacktestTotal[ForecastNSA] - BacktestTotal[ActualNSA] )
+)
+
+//// Backtest Naive MAPE | Accuracy | 0.00% | Average absolute percent miss of a same-month-last-year guess.
+Backtest Naive MAPE =
+IF (
+    [Use Sector Detail],
+    AVERAGEX (
+        FactBacktest,
+        DIVIDE ( ABS ( FactBacktest[SeasonalNaiveNSA] - FactBacktest[ActualNSA] ), FactBacktest[ActualNSA] )
+    ),
+    AVERAGEX (
+        BacktestTotal,
+        DIVIDE (
+            ABS ( BacktestTotal[SeasonalNaiveNSA] - BacktestTotal[ActualNSA] ),
+            BacktestTotal[ActualNSA]
+        )
+    )
+)
+
+//// Backtest Coverage | Accuracy | 0.0% | Share of test months whose actual sales fell inside the 80 percent range.
+Backtest Coverage =
+IF (
+    [Use Sector Detail],
+    AVERAGEX (
+        FactBacktest,
+        IF (
+            FactBacktest[ActualNSA] >= FactBacktest[Lower80]
+                && FactBacktest[ActualNSA] <= FactBacktest[Upper80],
+            1,
+            0
+        )
+    ),
+    AVERAGEX (
+        BacktestTotal,
+        IF (
+            BacktestTotal[ActualNSA] >= BacktestTotal[Lower80]
+                && BacktestTotal[ActualNSA] <= BacktestTotal[Upper80],
+            1,
+            0
+        )
+    )
+)
+
+//// Source Note | Reference | | Short source line for the report.
+Source Note =
+"U.S. Census Bureau monthly retail and food services sales, in millions of dollars. Not adjusted for inflation."

@@ -1,0 +1,148 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "name": "sectorTable",
+  "position": {
+    "x": 270,
+    "y": 370,
+    "z": 3,
+    "height": 334,
+    "width": 994,
+    "tabOrder": 3
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualConfiguration/2.2.0/schema.json",
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimSector"
+                    }
+                  },
+                  "Property": "SectorShort"
+                }
+              },
+              "queryRef": "DimSector.SectorShort",
+              "nativeQueryRef": "SectorShort"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Metrics"
+                    }
+                  },
+                  "Property": "Latest Month Sales"
+                }
+              },
+              "queryRef": "Metrics.Latest Month Sales",
+              "nativeQueryRef": "Latest Month Sales"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Metrics"
+                    }
+                  },
+                  "Property": "Latest Month YoY"
+                }
+              },
+              "queryRef": "Metrics.Latest Month YoY",
+              "nativeQueryRef": "Latest Month YoY"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Metrics"
+                    }
+                  },
+                  "Property": "TTM Sales"
+                }
+              },
+              "queryRef": "Metrics.TTM Sales",
+              "nativeQueryRef": "TTM Sales"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Metrics"
+                    }
+                  },
+                  "Property": "TTM Sector Share"
+                }
+              },
+              "queryRef": "Metrics.TTM Sector Share",
+              "nativeQueryRef": "TTM Sector Share"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Metrics"
+                    }
+                  },
+                  "Property": "TTM YoY Growth"
+                }
+              },
+              "queryRef": "Metrics.TTM YoY Growth",
+              "nativeQueryRef": "TTM YoY Growth"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Sector scorecard'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0B1F33'"
+                    }
+                  }
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

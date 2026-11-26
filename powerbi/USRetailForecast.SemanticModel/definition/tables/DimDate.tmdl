@@ -1,0 +1,110 @@
+table DimDate
+	lineageTag: aea431f2-509c-5331-b2f0-dc6b40bbc6ad
+	description = "Month-start calendar covering published sales and the 12-month forecast."
+
+	column Date
+		dataType: dateTime
+		formatString: "yyyy-mm-dd"
+		lineageTag: 4979efad-54ae-5238-bd77-4186beeb3732
+		summarizeBy: none
+		sourceColumn: Date
+		isKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: "0"
+		lineageTag: 6b6d0569-b225-51e4-84b4-41efef59e1cc
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: int64
+		formatString: "0"
+		lineageTag: c80847bb-f9e9-5b50-b7dc-39a87c8a8196
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column QuarterLabel
+		dataType: string
+		lineageTag: 655d8991-19a7-5313-a9f3-4147e36b54e8
+		summarizeBy: none
+		sourceColumn: QuarterLabel
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthNumber
+		dataType: int64
+		formatString: "0"
+		lineageTag: c1a616db-ee11-5cc2-9f6b-adb0e4ad174f
+		summarizeBy: none
+		sourceColumn: MonthNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthName
+		dataType: string
+		lineageTag: 682f72d4-cae5-542d-a250-450cd4d78b8f
+		summarizeBy: none
+		sourceColumn: MonthName
+		sortByColumn: MonthNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthShort
+		dataType: string
+		lineageTag: 33f6965a-3e8c-5753-844e-fe6c4af99564
+		summarizeBy: none
+		sourceColumn: MonthShort
+		sortByColumn: MonthNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonth
+		dataType: string
+		lineageTag: 03b1b30d-8a3a-5dfb-abab-ebb3a79a4c0d
+		summarizeBy: none
+		sourceColumn: YearMonth
+		sortByColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthYearLabel
+		dataType: string
+		lineageTag: 5e3f8a12-049e-57eb-8225-caddeafabc16
+		summarizeBy: none
+		sourceColumn: MonthYearLabel
+		sortByColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimDate = m
+		mode: import
+		source =
+			let
+			    Dates = List.Distinct(FactRetailSales[Date]),
+			    FirstDate = List.Min(Dates),
+			    LastActual = List.Max(Dates),
+			    LastDate = Date.AddMonths(LastActual, 12),
+			    AllDates = List.Generate(() => FirstDate, each _ <= LastDate, each Date.AddMonths(_, 1)),
+			    Base = Table.TransformColumnTypes(Table.FromList(AllDates, Splitter.SplitByNothing(), {"Date"}), {{"Date", type date}}),
+			    MonthNames = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"},
+			    MonthShorts = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"},
+			    AddYear = Table.AddColumn(Base, "Year", each Date.Year([Date]), Int64.Type),
+			    AddQuarter = Table.AddColumn(AddYear, "Quarter", each Date.QuarterOfYear([Date]), Int64.Type),
+			    AddQuarterLabel = Table.AddColumn(AddQuarter, "QuarterLabel", each Text.From([Year]) & " Q" & Text.From([Quarter]), type text),
+			    AddMonthNumber = Table.AddColumn(AddQuarterLabel, "MonthNumber", each Date.Month([Date]), Int64.Type),
+			    AddMonthName = Table.AddColumn(AddMonthNumber, "MonthName", each MonthNames{[MonthNumber] - 1}, type text),
+			    AddMonthShort = Table.AddColumn(AddMonthName, "MonthShort", each MonthShorts{[MonthNumber] - 1}, type text),
+			    AddYearMonth = Table.AddColumn(AddMonthShort, "YearMonth", each Date.ToText([Date], "yyyy-MM"), type text),
+			    AddLabel = Table.AddColumn(AddYearMonth, "MonthYearLabel", each [MonthShort] & " " & Text.From([Year]), type text)
+			in
+			    AddLabel
+
+	annotation PBI_ResultType = Table
+

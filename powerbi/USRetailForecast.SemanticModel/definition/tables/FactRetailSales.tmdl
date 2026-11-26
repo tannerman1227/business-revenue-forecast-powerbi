@@ -1,0 +1,53 @@
+table FactRetailSales
+	lineageTag: 4ff3230d-c427-5982-af23-3e8409918dc9
+	description = "Monthly sales by sector, in millions of dollars."
+
+	column Date
+		dataType: dateTime
+		formatString: "yyyy-mm-dd"
+		lineageTag: 3bbf9bb8-b8e6-59c8-a603-ab176e9cbe37
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column SectorKey
+		dataType: string
+		lineageTag: a9496c1d-668b-5f08-8855-7bdb9e909e54
+		summarizeBy: none
+		sourceColumn: SectorKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column SalesNSA
+		dataType: double
+		formatString: "#,0"
+		lineageTag: 28e5a5bf-6135-56a6-9caa-d6c7c62afa7c
+		summarizeBy: sum
+		sourceColumn: SalesNSA
+
+		annotation SummarizationSetBy = Automatic
+
+	column SalesSA
+		dataType: double
+		formatString: "#,0"
+		lineageTag: 6c0d5596-84af-5176-82d0-7c10b1c6427c
+		summarizeBy: sum
+		sourceColumn: SalesSA
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactRetailSales = m
+		mode: import
+		source =
+			let
+			    Local = fnLocalCsv(
+			        "fact_retail_sales.csv",
+			        {{"Date", type date}, {"SectorKey", type text}, {"SalesNSA", type number}, {"SalesSA", type number}}
+			    ),
+			    Result = if UseLiveCensus then fnLiveSales() else Local
+			in
+			    Result
+
+	annotation PBI_ResultType = Table
+

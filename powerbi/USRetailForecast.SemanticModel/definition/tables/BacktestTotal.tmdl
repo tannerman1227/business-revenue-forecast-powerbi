@@ -1,0 +1,124 @@
+table BacktestTotal
+	lineageTag: 8843900b-2d93-50be-8bb7-3c9f694b96b1
+	description = "Total forecast compared with the latest 12 published months."
+
+	column Date
+		dataType: dateTime
+		formatString: "yyyy-mm-dd"
+		lineageTag: e0e7605c-185a-5680-a7df-6e1ea84e184a
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column Horizon
+		dataType: int64
+		formatString: "0"
+		lineageTag: 26ff619b-7571-59d4-b217-06c4fee9fa88
+		summarizeBy: none
+		sourceColumn: Horizon
+
+		annotation SummarizationSetBy = Automatic
+
+	column ForecastNSA
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: 83912336-c17e-5e70-8426-77c294ddb271
+		summarizeBy: sum
+		sourceColumn: ForecastNSA
+
+		annotation SummarizationSetBy = Automatic
+
+	column Lower80
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: 146db966-7756-5a4e-838a-7616bf981706
+		summarizeBy: none
+		sourceColumn: Lower80
+
+		annotation SummarizationSetBy = Automatic
+
+	column Upper80
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: 6d3e19dd-edf0-546b-bfef-79d083060696
+		summarizeBy: none
+		sourceColumn: Upper80
+
+		annotation SummarizationSetBy = Automatic
+
+	column Model
+		dataType: string
+		lineageTag: 671862b0-993d-5fd2-92a5-3e208f62215b
+		summarizeBy: none
+		sourceColumn: Model
+
+		annotation SummarizationSetBy = Automatic
+
+	column ActualNSA
+		dataType: int64
+		formatString: "#,0"
+		lineageTag: 0f4944cf-90f3-543c-b06b-133906ebf47f
+		summarizeBy: sum
+		sourceColumn: ActualNSA
+
+		annotation SummarizationSetBy = Automatic
+
+	column SeasonalNaiveNSA
+		dataType: int64
+		formatString: "#,0"
+		lineageTag: fa906d17-cded-5c38-bd60-04760aa1504e
+		summarizeBy: sum
+		sourceColumn: SeasonalNaiveNSA
+
+		annotation SummarizationSetBy = Automatic
+
+	column Error
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: e8169543-1ea4-5f1b-8237-00b2e0dd09a2
+		summarizeBy: sum
+		sourceColumn: Error
+
+		annotation SummarizationSetBy = Automatic
+
+	column AbsError
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: 9a5be1f0-61b7-5c50-90e6-d68dfa3fff8d
+		summarizeBy: sum
+		sourceColumn: AbsError
+
+		annotation SummarizationSetBy = Automatic
+
+	column AbsPctError
+		dataType: double
+		formatString: "0.00%"
+		lineageTag: 91475fc5-7571-50d2-a699-75e7e04c9418
+		summarizeBy: none
+		sourceColumn: AbsPctError
+
+		annotation SummarizationSetBy = Automatic
+
+	partition BacktestTotal = m
+		mode: import
+		source =
+			fnLocalCsv(
+			    "backtest_total.csv",
+			    {
+			        {"Date", type date},
+			        {"Horizon", Int64.Type},
+			        {"ForecastNSA", type number},
+			        {"Lower80", type number},
+			        {"Upper80", type number},
+			        {"Model", type text},
+			        {"ActualNSA", Int64.Type},
+			        {"SeasonalNaiveNSA", Int64.Type},
+			        {"Error", type number},
+			        {"AbsError", type number},
+			        {"AbsPctError", type number}
+			    }
+			)
+
+	annotation PBI_ResultType = Table
+

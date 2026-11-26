@@ -1,0 +1,288 @@
+expression UseLiveCensus =
+		false meta [IsParameterQuery = true, Type = "Logical", IsParameterQueryRequired = true]
+	lineageTag: 0139f6bb-a9eb-53be-8fe8-bb0f75cb9b8c
+
+	annotation PBI_ResultType = Logical
+
+expression DataRoot =
+		"SET_DATA_FOLDER" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 3eb17a6d-9430-553f-ae2d-b261549ba5c1
+
+	annotation PBI_ResultType = Text
+
+expression fnAsNumber =
+		(value as any) as nullable number =>
+		    if value is number then Number.From(value)
+		    else try Number.FromText(Text.Trim(Text.From(value))) otherwise null
+	lineageTag: 22719c40-c903-50a7-8783-8e8c31ce4a4d
+
+	annotation PBI_ResultType = Function
+
+expression fnCodeKey =
+		(value as any) as nullable text =>
+		    let
+		        Codes = {
+		            "441", "442", "443", "444", "445", "446", "447",
+		            "448", "451", "452", "453", "454", "722"
+		        },
+		        TextValue =
+		            if value is number then Text.From(Number.RoundDown(value, 0))
+		            else Text.Trim(try Text.From(value) otherwise ""),
+		        Digits = Text.Select(TextValue, {"0".."9"})
+		    in
+		        if List.Contains(Codes, Digits) and Text.Length(Digits) = Text.Length(TextValue) then Digits else null
+	lineageTag: 7230e0e3-0a31-5bcf-946a-771225c3ff3d
+
+	annotation PBI_ResultType = Function
+
+expression fnSectorKey =
+		(code as text) as text =>
+		    Record.Field(
+		        [
+		            #"441" = "MOTOR",
+		            #"442" = "FURNITURE",
+		            #"443" = "ELECTRONICS",
+		            #"444" = "BUILDING",
+		            #"445" = "FOOD_STORES",
+		            #"446" = "HEALTH",
+		            #"447" = "GASOLINE",
+		            #"448" = "CLOTHING",
+		            #"451" = "SPORTING",
+		            #"452" = "GENERAL",
+		            #"453" = "MISC",
+		            #"454" = "NONSTORE",
+		            #"722" = "FOOD_SERVICE"
+		        ],
+		        code
+		    )
+	lineageTag: a2fc4574-af11-5630-bbb6-227c35645aab
+
+	annotation PBI_ResultType = Function
+
+expression fnParseMonth =
+		(label as any, fallbackYear as nullable number) as nullable date =>
+		    let
+		        Raw = Text.Trim(try Text.From(label) otherwise ""),
+		        Clean = Text.Replace(Text.Replace(Text.Replace(Raw, "(p)", ""), "(r)", ""), "(a)", ""),
+		        Parts = List.Select(Text.Split(Text.Replace(Clean, ".", " "), " "), each _ <> ""),
+		        Token = if List.Count(Parts) >= 1 then Text.Lower(Text.Start(Parts{0}, 3)) else "",
+		        MonthNames = {"jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"},
+		        Found = List.PositionOf(MonthNames, Token),
+		        YearText = if List.Count(Parts) >= 2 then Text.Select(Parts{1}, {"0".."9"}) else "",
+		        YearNum = if Text.Length(YearText) = 4 then Number.FromText(YearText) else fallbackYear
+		    in
+		        if Found < 0 or YearNum = null then null else #date(YearNum, Found + 1, 1)
+	lineageTag: 39783241-36bb-5374-8c64-77350d86d255
+
+	annotation PBI_ResultType = Function
+
+expression fnSheetRows =
+		(data as table) as list =>
+		    let
+		        Cols = Table.ColumnNames(data),
+		        Recs = Table.ToRecords(data)
+		    in
+		        List.Transform(Recs, (row) => List.Transform(Cols, (col) => Record.Field(row, col)))
+	lineageTag: a6407b43-497d-5841-833c-4a383eacfc26
+
+	annotation PBI_ResultType = Function
+
+expression fnHistorySheet =
+		(data as table) as table =>
+		    let
+		        Rows = fnSheetRows(data),
+		        Upper = (row as list, idx as number) as text =>
+		            try Text.Upper(Text.Trim(Text.From(row{idx}))) otherwise "",
+		        NotAt = List.PositionOf(List.Transform(Rows, each Text.Contains(Upper(_, 1), "NOT ADJUSTED")), true, Occurrence.First),
+		        AdjAt = List.PositionOf(
+		            List.Transform(Rows, each Text.Contains(Upper(_, 1), "ADJUSTED") and not Text.Contains(Upper(_, 1), "NOT")),
+		            true,
+		            Occurrence.First
+		        ),
+		        Empty = #table(type table [SectorKey = text, Date = date, Kind = text, Value = number], {}),
+		        Result =
+		            if NotAt < 1 or AdjAt < 0 then
+		                Empty
+		            else
+		                let
+		                    Header = Rows{NotAt - 1},
+		                    Months = List.Select(
+		                        List.Transform({0 .. List.Count(Header) - 1}, (i) => {i, fnParseMonth(Header{i}, null)}),
+		                        each _{1} <> null
+		                    ),
+		                    Take = (slice as list, kind as text) as list =>
+		                        List.Combine(
+		                            List.Transform(
+		                                slice,
+		                                (row) =>
+		                                    let
+		                                        Code = fnCodeKey(row{0})
+		                                    in
+		                                        if Code = null then
+		                                            {}
+		                                        else
+		                                            List.Transform(
+		                                                List.Select(Months, (m) => fnAsNumber(row{m{0}}) <> null),
+		                                                (m) => [
+		                                                    SectorKey = fnSectorKey(Code),
+		                                                    Date = m{1},
+		                                                    Kind = kind,
+		                                                    Value = fnAsNumber(row{m{0}})
+		                                                ]
+		                                            )
+		                            )
+		                        ),
+		                    NsaRows = Take(List.Range(Rows, NotAt + 1, AdjAt - NotAt - 1), "NSA"),
+		                    SaRows = Take(List.Range(Rows, AdjAt + 1, List.Count(Rows) - AdjAt - 1), "SA")
+		                in
+		                    Table.FromRecords(NsaRows & SaRows, type table [SectorKey = text, Date = date, Kind = text, Value = number])
+		    in
+		        Result
+	lineageTag: ecf3918e-200d-5719-9445-7e0320656a7b
+
+	annotation PBI_ResultType = Function
+
+expression fnAdvanceSheet =
+		(data as table) as table =>
+		    let
+		        Rows = fnSheetRows(data),
+		        HasOct = List.Transform(
+		            Rows,
+		            (row) => List.AnyTrue(List.Transform(row, (cell) => Text.Contains(try Text.Upper(Text.From(cell)) otherwise "", "OCT")))
+		        ),
+		        MonthRow = List.PositionOf(HasOct, true, Occurrence.First),
+		        Empty = #table(type table [SectorKey = text, Date = date, Kind = text, Value = number], {}),
+		        Result =
+		            if MonthRow < 2 then
+		                Empty
+		            else
+		                let
+		                    SectionRow = Rows{MonthRow - 2},
+		                    YearRow = Rows{MonthRow - 1},
+		                    Labels = Rows{MonthRow},
+		                    Wide = List.Max({List.Count(SectionRow), List.Count(YearRow), List.Count(Labels)}),
+		                    State = List.Accumulate(
+		                        {0 .. Wide - 1},
+		                        [Year = null, Section = null, Columns = {}],
+		                        (state, index) =>
+		                            let
+		                                SecText = try Text.Upper(Text.From(SectionRow{index})) otherwise "",
+		                                Section =
+		                                    if Text.Contains(SecText, "NOT ADJUSTED") then "NSA"
+		                                    else if Text.Contains(SecText, "ADJUST") then "SA"
+		                                    else state[Section],
+		                                YearCell = if index < List.Count(YearRow) then YearRow{index} else null,
+		                                YearDigits = Text.Select(try Text.From(YearCell) otherwise "", {"0".."9"}),
+		                                Year =
+		                                    if YearCell is number and YearCell > 1900 then Number.RoundDown(YearCell, 0)
+		                                    else if Text.Length(YearDigits) = 4 then Number.FromText(YearDigits)
+		                                    else state[Year],
+		                                Stamp = fnParseMonth(if index < List.Count(Labels) then Labels{index} else null, Year),
+		                                Columns =
+		                                    if Section <> null and Stamp <> null then state[Columns] & {{index, Section, Stamp}}
+		                                    else state[Columns]
+		                            in
+		                                [Year = Year, Section = Section, Columns = Columns]
+		                    ),
+		                    Columns = State[Columns],
+		                    Walked = List.Accumulate(
+		                        List.Skip(Rows, MonthRow + 1),
+		                        [Pending = null, Out = {}],
+		                        (state, row) =>
+		                            let
+		                                Code = fnCodeKey(if List.Count(row) > 0 then row{0} else null),
+		                                HasValue = List.AnyTrue(List.Transform(Columns, (col) => fnAsNumber(if col{0} < List.Count(row) then row{col{0}} else null) <> null)),
+		                                Use = if Code <> null and HasValue then Code else if HasValue then state[Pending] else null,
+		                                Added =
+		                                    if Use = null then
+		                                        {}
+		                                    else
+		                                        List.Transform(
+		                                            List.Select(Columns, (col) => fnAsNumber(if col{0} < List.Count(row) then row{col{0}} else null) <> null),
+		                                            (col) => [
+		                                                SectorKey = fnSectorKey(Use),
+		                                                Date = col{2},
+		                                                Kind = col{1},
+		                                                Value = fnAsNumber(row{col{0}})
+		                                            ]
+		                                        )
+		                            in
+		                                [
+		                                    Pending = if Code <> null and not HasValue then Code else null,
+		                                    Out = state[Out] & Added
+		                                ]
+		                    )
+		                in
+		                    Table.FromRecords(Walked[Out], type table [SectorKey = text, Date = date, Kind = text, Value = number])
+		    in
+		        Result
+	lineageTag: 0c4edd49-eb9e-5daa-a4f3-0b68dcef914a
+
+	annotation PBI_ResultType = Function
+
+expression fnLiveSales =
+		() as table =>
+		    let
+		        HistoryBook = Excel.Workbook(Web.Contents("https://www.census.gov/retail/mrts/www/mrtssales92-present.xlsx"), false, true),
+		        AdvanceBook = Excel.Workbook(Web.Contents("https://www.census.gov/retail/marts/www/marts_current.xlsx"), false, true),
+		        NameCol = if List.Contains(Table.ColumnNames(HistoryBook), "Name") then "Name" else "Item",
+		        YearSheets = Table.SelectRows(
+		            HistoryBook,
+		            each [Kind] = "Sheet" and try Number.FromText(Text.From(Record.Field(_, NameCol))) > 1900 otherwise false
+		        ),
+		        History = Table.Combine(List.Transform(YearSheets[Data], each fnHistorySheet(_))),
+		        AdvanceSheet = Table.SelectRows(AdvanceBook, each [Kind] = "Sheet"){0}[Data],
+		        Advance = fnAdvanceSheet(AdvanceSheet),
+		        Tagged = Table.Combine({
+		            Table.AddColumn(History, "Priority", each 0, Int64.Type),
+		            Table.AddColumn(Advance, "Priority", each 1, Int64.Type)
+		        }),
+		        Grouped = Table.Group(
+		            Tagged,
+		            {"Date", "SectorKey"},
+		            {
+		                {
+		                    "SalesNSA",
+		                    each
+		                        let
+		                            t = Table.Sort(Table.SelectRows(_, each [Kind] = "NSA"), {{"Priority", Order.Descending}})
+		                        in
+		                            if Table.IsEmpty(t) then null else t{0}[Value],
+		                    type number
+		                },
+		                {
+		                    "SalesSA",
+		                    each
+		                        let
+		                            t = Table.Sort(Table.SelectRows(_, each [Kind] = "SA"), {{"Priority", Order.Descending}})
+		                        in
+		                            if Table.IsEmpty(t) then null else t{0}[Value],
+		                    type number
+		                }
+		            }
+		        ),
+		        Clean = Table.SelectRows(Grouped, each [SalesNSA] <> null and [SalesSA] <> null),
+		        Typed = Table.TransformColumnTypes(
+		            Table.SelectColumns(Clean, {"Date", "SectorKey", "SalesNSA", "SalesSA"}),
+		            {{"Date", type date}, {"SectorKey", type text}, {"SalesNSA", type number}, {"SalesSA", type number}}
+		        )
+		    in
+		        Table.Sort(Typed, {{"Date", Order.Ascending}, {"SectorKey", Order.Ascending}})
+	lineageTag: c4a76caa-1f68-5ec9-bd72-f41bfc1c061d
+
+	annotation PBI_ResultType = Function
+
+expression fnLocalCsv =
+		(fileName as text, columnTypes as list) as table =>
+		    let
+		        Root = Text.TrimEnd(Text.Replace(DataRoot, "\", "/"), "/"),
+		        Raw = Csv.Document(
+		            File.Contents(Root & "/" & fileName),
+		            [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+		        ),
+		        Promoted = Table.PromoteHeaders(Raw, [PromoteAllScalars = true])
+		    in
+		        Table.TransformColumnTypes(Promoted, columnTypes)
+	lineageTag: a0cd8756-ca0f-5bf8-9db2-8b7efcee403b
+
+	annotation PBI_ResultType = Function

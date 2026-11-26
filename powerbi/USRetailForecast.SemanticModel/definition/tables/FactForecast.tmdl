@@ -1,0 +1,93 @@
+table FactForecast
+	lineageTag: 7674b2f5-141f-5426-bfdd-e842c0426179
+	description = "12-month sector forecast. The sectors add up to the total forecast."
+
+	column Date
+		dataType: dateTime
+		formatString: "yyyy-mm-dd"
+		lineageTag: 4d0aaea1-67fb-506d-add6-b677daccaa8f
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column SectorKey
+		dataType: string
+		lineageTag: ed73f6c3-ca8f-57ee-873e-ad393424a0e1
+		summarizeBy: none
+		sourceColumn: SectorKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column Horizon
+		dataType: int64
+		formatString: "0"
+		lineageTag: b18187d6-3d62-5dc1-85ed-0da6ccd8d8a5
+		summarizeBy: none
+		sourceColumn: Horizon
+
+		annotation SummarizationSetBy = Automatic
+
+	column ForecastNSA
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: 0dc87cbc-4af6-52f3-981a-e5a63706c46b
+		summarizeBy: sum
+		sourceColumn: ForecastNSA
+
+		annotation SummarizationSetBy = Automatic
+
+	column Lower80
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: 21d06a41-3cd6-50ff-9cfa-170c18207660
+		summarizeBy: none
+		sourceColumn: Lower80
+
+		annotation SummarizationSetBy = Automatic
+
+	column Upper80
+		dataType: double
+		formatString: "#,0.00"
+		lineageTag: 646f85a0-c246-59fa-a59e-7f14613410d0
+		summarizeBy: none
+		sourceColumn: Upper80
+
+		annotation SummarizationSetBy = Automatic
+
+	column ReconcileFactor
+		dataType: double
+		formatString: "0.000000"
+		lineageTag: aaa0c603-9680-52e2-8756-4d8186f6f19a
+		summarizeBy: none
+		sourceColumn: ReconcileFactor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Model
+		dataType: string
+		lineageTag: be0836d3-8a2e-5451-a946-90cfe422b835
+		summarizeBy: none
+		sourceColumn: Model
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactForecast = m
+		mode: import
+		source =
+			fnLocalCsv(
+			    "fact_forecast.csv",
+			    {
+			        {"Date", type date},
+			        {"SectorKey", type text},
+			        {"Horizon", Int64.Type},
+			        {"ForecastNSA", type number},
+			        {"Lower80", type number},
+			        {"Upper80", type number},
+			        {"ReconcileFactor", type number},
+			        {"Model", type text}
+			    }
+			)
+
+	annotation PBI_ResultType = Table
+

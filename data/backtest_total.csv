@@ -1,0 +1,13 @@
+Date,Horizon,ForecastNSA,Lower80,Upper80,Model,ActualNSA,SeasonalNaiveNSA,Error,AbsError,AbsPctError
+2025-11-01,1,715016.84,702317.3,731031.9,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",704758,694948,10258.84,10258.84,0.014557
+2025-12-01,2,778352.33,761012.27,803512.2,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",780707,754951,-2354.67,2354.67,0.003016
+2026-01-01,3,644682.4,623181.23,674513.98,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",640890,629000,3792.4,3792.4,0.005917
+2026-02-01,4,628388.39,603474.31,663320.91,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",625789,605151,2599.39,2599.39,0.004154
+2026-03-01,5,717842.96,685890.93,762956.82,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",727278,698449,-9435.04,9435.04,0.012973
+2026-04-01,6,699487.99,666500.06,747833.73,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",722302,696120,-22814.01,22814.01,0.031585
+2026-05-01,7,743003.85,704639.57,799607.7,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",760550,723761,-17546.15,17546.15,0.02307
+2026-06-01,8,719273.63,684490.79,778608.83,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",741344,688978,-22070.37,22070.37,0.029771
+2026-07-01,9,726480.19,688736.19,790698.26,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",749221,715687,-22740.81,22740.81,0.030353
+2026-08-01,10,733192.57,693484.07,803407.58,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",751781,715547,-18588.43,18588.43,0.024726
+2026-09-01,11,689277.68,652588.45,759104.91,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",728961,680630,-39683.32,39683.32,0.054438
+2026-10-01,12,718655.15,679094.26,794796.96,"Holt-Winters additive damped trend, mul seasonality, 8-year window, reconciled to the total forecast",761378,712145,-42722.85,42722.85,0.056113
