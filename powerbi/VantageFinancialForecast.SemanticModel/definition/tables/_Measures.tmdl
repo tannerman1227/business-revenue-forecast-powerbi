@@ -1,0 +1,593 @@
+/// Calculation table. No columns. Every report visual reads from here.
+table _Measures
+	lineageTag: 666a411a-0001-5aba-98e0-6fd42f093f0c
+
+	/// Recognized revenue. Actuals only. Forecast scenarios are a separate fact.
+	measure Revenue = ```
+			SUM ( fact_revenue_actuals[Revenue] )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Revenue
+		lineageTag: 8b4cfafe-b134-5593-b129-02a1ea8420fb
+
+	/// Year-to-date revenue through the last visible date. Fiscal year equals the calendar year.
+	measure 'Revenue YTD' = ```
+			TOTALYTD ( [Revenue], dim_date[Date] )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Revenue
+		lineageTag: 8e7268c7-9116-5295-aad7-4656ff2464ef
+
+	/// Revenue in the same period last year.
+	measure 'Revenue PY' = ```
+			CALCULATE ( [Revenue], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Revenue
+		lineageTag: 0df4f97b-0691-5f90-87f7-a75392a493eb
+
+	/// Prior-year year-to-date revenue, aligned to the same elapsed period.
+	measure 'Revenue YTD PY' = ```
+			CALCULATE ( [Revenue YTD], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Revenue
+		lineageTag: 5b860c17-b5d2-515c-94de-1a2c11156342
+
+	/// Absolute change in revenue versus the same period last year.
+	measure 'Revenue YoY $' = ```
+			[Revenue] - [Revenue PY]
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Revenue
+		lineageTag: 12e2a53d-122c-5159-a62a-8114010f14dc
+
+	/// Percent change in revenue versus the same period last year.
+	measure 'Revenue YoY %' = ```
+			DIVIDE ( [Revenue YoY $], [Revenue PY] )
+		```
+		formatString: "0.0%"
+		displayFolder: Revenue
+		lineageTag: c8625ecc-7782-50e4-bc7f-f34315058c41
+
+	/// Percent change versus the prior month. Read it on a month axis.
+	measure 'Revenue MoM %' = ```
+			VAR PriorMonth =
+			    CALCULATE ( [Revenue], DATEADD ( dim_date[Date], -1, MONTH ) )
+			RETURN
+			    DIVIDE ( [Revenue] - PriorMonth, PriorMonth )
+		```
+		formatString: "0.0%"
+		displayFolder: Revenue
+		lineageTag: f32a7835-8784-5b28-a4c1-8007a80ba829
+
+	/// Sum of revenue over the three months ending at the last visible date.
+	measure 'Revenue Rolling 3M' = ```
+			CALCULATE (
+			    [Revenue],
+			    DATESINPERIOD ( dim_date[Date], MAX ( dim_date[Date] ), -3, MONTH )
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Revenue
+		lineageTag: a3b2dc42-4222-5be2-b88f-0371ed65fcf7
+
+	/// Average monthly revenue over the trailing three months. The divisor is the number of months present, so FY2022 does not divide a short window by three.
+	measure 'Revenue Rolling 3M Avg' = ```
+			VAR EndDate = MAX ( dim_date[Date] )
+			VAR Window =
+			    DATESINPERIOD ( dim_date[Date], EndDate, -3, MONTH )
+			VAR Months =
+			    CALCULATE ( DISTINCTCOUNT ( dim_date[YearMonth] ), Window )
+			RETURN
+			    DIVIDE ( CALCULATE ( [Revenue], Window ), Months )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Revenue
+		lineageTag: 3d1e258f-e7f2-5be0-b845-678318d96803
+
+	/// Trailing twelve-month revenue.
+	measure 'Revenue Rolling 12M' = ```
+			CALCULATE (
+			    [Revenue],
+			    DATESINPERIOD ( dim_date[Date], MAX ( dim_date[Date] ), -12, MONTH )
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Revenue
+		lineageTag: 1fc109a3-f9b0-575a-87ae-d65c8c6eec21
+
+	/// Cost of goods sold on actuals.
+	measure COGS = ```
+			SUM ( fact_revenue_actuals[COGS] )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Margin
+		lineageTag: fd66f0b1-af17-5753-9665-ba7caceb0d2f
+
+	/// Revenue minus COGS. Calculated, not taken from the stored column, so the identity cannot drift.
+	measure 'Gross Profit' = ```
+			[Revenue] - [COGS]
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Margin
+		lineageTag: c923f3f5-8f2d-5570-b845-7fd5a87b53b5
+
+	/// Gross profit as a share of revenue.
+	measure 'Gross Margin %' = ```
+			DIVIDE ( [Gross Profit], [Revenue] )
+		```
+		formatString: "0.0%"
+		displayFolder: Margin
+		lineageTag: 08021c64-88b6-56f0-80c6-68ecc09c5ea9
+
+	/// Operating expense allocated to the fact grain. Regional intensity is applied upstream of this measure.
+	measure OpEx = ```
+			SUM ( fact_revenue_actuals[OpEx] )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Margin
+		lineageTag: a82cb70b-2a44-5b6e-94ce-d0b726f39af9
+
+	/// Operating expense ratio.
+	measure 'OpEx % of Revenue' = ```
+			DIVIDE ( [OpEx], [Revenue] )
+		```
+		formatString: "0.0%"
+		displayFolder: Margin
+		lineageTag: 84aaf34a-516c-56ac-94aa-289eddcd8641
+
+	/// Gross profit minus operating expense.
+	measure EBITDA = ```
+			[Gross Profit] - [OpEx]
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Margin
+		lineageTag: 044f9002-898b-5149-bbe3-1999371be43f
+
+	/// EBITDA as a share of revenue.
+	measure 'EBITDA Margin %' = ```
+			DIVIDE ( [EBITDA], [Revenue] )
+		```
+		formatString: "0.0%"
+		displayFolder: Margin
+		lineageTag: 608beeb4-01c7-5e47-a2b2-7b6e61de0252
+
+	/// Gross profit in the same period last year.
+	measure 'Gross Profit PY' = ```
+			CALCULATE ( [Gross Profit], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Margin
+		lineageTag: 7840af57-9a2f-5c98-aa27-4f77babc7f6a
+
+	/// Gross margin in the same period last year.
+	measure 'Gross Margin % PY' = ```
+			CALCULATE ( [Gross Margin %], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+		```
+		formatString: "0.0%"
+		displayFolder: Margin
+		lineageTag: dfeb8083-9390-5271-b83b-0f9003897aeb
+
+	/// Year-over-year change in gross margin, in basis points.
+	measure 'Gross Margin YoY bps' = ```
+			( [Gross Margin %] - [Gross Margin % PY] ) * 10000
+		```
+		formatString: "+0;-0;0"
+		displayFolder: Margin
+		lineageTag: defbc6c6-c0fd-5a13-a002-a61f0230bd31
+
+	/// Operating expense in the same period last year.
+	measure 'OpEx PY' = ```
+			CALCULATE ( [OpEx], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Margin
+		lineageTag: 79f8734e-560b-55b5-a787-ecf7571543c0
+
+	/// EBITDA in the same period last year.
+	measure 'EBITDA PY' = ```
+			CALCULATE ( [EBITDA], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Margin
+		lineageTag: 7b0e77af-4cac-58d2-a6b4-5528ee23b4f3
+
+	/// Year-to-date EBITDA.
+	measure 'EBITDA YTD' = ```
+			TOTALYTD ( [EBITDA], dim_date[Date] )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Margin
+		lineageTag: 0fecdce9-776f-5d9b-bbd7-dd2d8485cc23
+
+	/// Percent change in EBITDA versus the same period last year.
+	measure 'EBITDA YoY %' = ```
+			DIVIDE ( [EBITDA] - [EBITDA PY], [EBITDA PY] )
+		```
+		formatString: "0.0%"
+		displayFolder: Margin
+		lineageTag: b483f372-d858-5f4b-9950-b213ad52a672
+
+	/// EBITDA margin in the same period last year.
+	measure 'EBITDA Margin % PY' = ```
+			CALCULATE ( [EBITDA Margin %], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+		```
+		formatString: "0.0%"
+		displayFolder: Margin
+		lineageTag: e9169e02-34a0-5ead-81ed-153608d45f08
+
+	/// Year-over-year change in EBITDA margin, in basis points.
+	measure 'EBITDA Margin YoY bps' = ```
+			( [EBITDA Margin %] - [EBITDA Margin % PY] ) * 10000
+		```
+		formatString: "+0;-0;0"
+		displayFolder: Margin
+		lineageTag: 39f4ae2a-08a4-587e-a1ef-890f7ff8e46b
+
+	/// Annual budget revenue. Ignores a scenario slicer so the comparison stays on screen.
+	measure 'Budget Revenue' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[Revenue] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Budget"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Budget
+		lineageTag: 98a8555b-85c6-5ce9-8443-9392a90e7702
+
+	/// Budget cost of goods sold.
+	measure 'Budget COGS' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[COGS] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Budget"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Budget
+		lineageTag: 57194386-c8c9-5c41-b1d9-3153e0db8cf3
+
+	/// Budget gross profit.
+	measure 'Budget Gross Profit' = ```
+			[Budget Revenue] - [Budget COGS]
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Budget
+		lineageTag: c8f3473d-137d-54d0-b225-8357236138f4
+
+	/// Budget gross margin.
+	measure 'Budget Gross Margin %' = ```
+			DIVIDE ( [Budget Gross Profit], [Budget Revenue] )
+		```
+		formatString: "0.0%"
+		displayFolder: Budget
+		lineageTag: a181ab41-39ac-5ba5-9615-deb8e908a6f6
+
+	/// Budget operating expense.
+	measure 'Budget OpEx' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[OpEx] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Budget"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Budget
+		lineageTag: 1747f84a-983f-551e-a663-440599233938
+
+	/// Budget EBITDA.
+	measure 'Budget EBITDA' = ```
+			[Budget Gross Profit] - [Budget OpEx]
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Budget
+		lineageTag: 2fe3f890-6acc-54f8-8298-6f2d63647bf3
+
+	/// Budget EBITDA margin.
+	measure 'Budget EBITDA Margin %' = ```
+			DIVIDE ( [Budget EBITDA], [Budget Revenue] )
+		```
+		formatString: "0.0%"
+		displayFolder: Budget
+		lineageTag: 6ca117f4-8d37-5e2c-bd06-df32c3569636
+
+	/// Revenue minus budget. Positive is a beat.
+	measure 'Revenue vs Budget $' = ```
+			[Revenue] - [Budget Revenue]
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Budget
+		lineageTag: 982c941f-8f68-524f-a369-6ac78c13579b
+
+	/// Revenue variance as a percent of budget.
+	measure 'Revenue vs Budget %' = ```
+			DIVIDE ( [Revenue vs Budget $], [Budget Revenue] )
+		```
+		formatString: "0.0%"
+		displayFolder: Budget
+		lineageTag: 3a1cb3d9-7a15-590e-b0fa-8c62f89e508d
+
+	/// Gross-margin variance versus budget, in basis points.
+	measure 'Gross Margin vs Budget bps' = ```
+			( [Gross Margin %] - [Budget Gross Margin %] ) * 10000
+		```
+		formatString: "+0;-0;0"
+		displayFolder: Budget
+		lineageTag: fadf3a1a-471a-5bca-8634-489ed7ec5dea
+
+	/// Operating expense minus budget. Negative means spending came in under plan.
+	measure 'OpEx vs Budget $' = ```
+			[OpEx] - [Budget OpEx]
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Budget
+		lineageTag: 48f36313-9537-52ac-8bd5-1e1503f895ef
+
+	/// EBITDA minus budget. Positive is a beat.
+	measure 'EBITDA vs Budget $' = ```
+			[EBITDA] - [Budget EBITDA]
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Budget
+		lineageTag: 333a41a9-8ac6-5cf3-91e4-777f5a3e4335
+
+	/// EBITDA variance as a percent of budget.
+	measure 'EBITDA vs Budget %' = ```
+			DIVIDE ( [EBITDA vs Budget $], [Budget EBITDA] )
+		```
+		formatString: "0.0%"
+		displayFolder: Budget
+		lineageTag: d60767ad-3039-572f-9f8e-e425f9304cf2
+
+	/// EBITDA-margin variance versus budget, in basis points.
+	measure 'EBITDA Margin vs Budget bps' = ```
+			( [EBITDA Margin %] - [Budget EBITDA Margin %] ) * 10000
+		```
+		formatString: "+0;-0;0"
+		displayFolder: Budget
+		lineageTag: fb3ca1a0-21c4-5c9e-b34a-6e949cd90df8
+
+	/// FY2026 base-case revenue from the Holt-Winters point forecast.
+	measure 'Forecast Revenue Base' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[Revenue] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Forecast - Base"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: eda0b511-f140-51ff-9a19-08052b2f637a
+
+	/// FY2026 upside revenue, the 90th percentile of simulated full-year revenue.
+	measure 'Forecast Revenue Upside' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[Revenue] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Forecast - Upside"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: a86fbd58-7b2a-56ba-a12c-f6817559096b
+
+	/// FY2026 downside revenue, the 10th percentile of simulated full-year revenue.
+	measure 'Forecast Revenue Downside' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[Revenue] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Forecast - Downside"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: 85a3d19d-a442-5be1-9170-0c27099c3a5c
+
+	/// Base-case gross profit.
+	measure 'Forecast Gross Profit Base' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[GrossProfit] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Forecast - Base"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: d0e93936-9f48-5aae-8837-e56d9af00b58
+
+	/// Base-case operating expense.
+	measure 'Forecast OpEx Base' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[OpEx] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Forecast - Base"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: 0a10fe8a-6dc5-57aa-9ca9-13f4fd09a517
+
+	/// Base-case EBITDA.
+	measure 'Forecast EBITDA Base' = ```
+			[Forecast Gross Profit Base] - [Forecast OpEx Base]
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: 9881092b-9384-5606-a1bd-6d6e25d72d8c
+
+	/// Upside EBITDA.
+	measure 'Forecast EBITDA Upside' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[GrossProfit] ) - SUM ( fact_budget_forecast[OpEx] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Forecast - Upside"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: 49903c14-4fbe-5f2b-8bfd-65aea11259fe
+
+	/// Downside EBITDA.
+	measure 'Forecast EBITDA Downside' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[GrossProfit] ) - SUM ( fact_budget_forecast[OpEx] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Forecast - Downside"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: b70c3701-f992-50a4-8f3e-5c8ac070ed10
+
+	/// Base-case gross margin.
+	measure 'Forecast Gross Margin % Base' = ```
+			DIVIDE ( [Forecast Gross Profit Base], [Forecast Revenue Base] )
+		```
+		formatString: "0.0%"
+		displayFolder: Forecast
+		lineageTag: 5fb79868-e3ec-571e-a3e5-475de98e608f
+
+	/// Base-case EBITDA margin.
+	measure 'Forecast EBITDA Margin % Base' = ```
+			DIVIDE ( [Forecast EBITDA Base], [Forecast Revenue Base] )
+		```
+		formatString: "0.0%"
+		displayFolder: Forecast
+		lineageTag: 92ae7176-caa7-5cf9-85d5-ab9a94eebd7a
+
+	/// Actual revenue through FY2025 and the base forecast in FY2026. Use it on a month or quarter axis. A grand total stays on actuals, because the stage is no longer unique.
+	measure 'Revenue Actual or Forecast' = ```
+			IF (
+			    SELECTEDVALUE ( dim_date[CalendarStage] ) = "Forecast Horizon",
+			    [Forecast Revenue Base],
+			    [Revenue]
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: 020d739c-c634-56bf-9946-ffe73dc12051
+
+	/// Base-case FY2026 revenue, pinned to the year so a multi-year page still shows the plan.
+	measure 'FY2026 Base Revenue' = ```
+			CALCULATE ( [Forecast Revenue Base], dim_date[Year] = 2026 )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: dbc2d849-b8bc-53c6-9bd8-8f7f67a7a21d
+
+	/// Official FY2026 budget revenue.
+	measure 'FY2026 Budget Revenue' = ```
+			CALCULATE ( [Budget Revenue], dim_date[Year] = 2026 )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: fe1b89f1-3732-52f2-ba1c-34508db7d107
+
+	/// Upside FY2026 revenue.
+	measure 'FY2026 Upside Revenue' = ```
+			CALCULATE ( [Forecast Revenue Upside], dim_date[Year] = 2026 )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: 48f29525-7e55-5c81-8196-ca807fd64b91
+
+	/// Downside FY2026 revenue.
+	measure 'FY2026 Downside Revenue' = ```
+			CALCULATE ( [Forecast Revenue Downside], dim_date[Year] = 2026 )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: 68f68e1b-dac9-5278-9063-db4c3412045f
+
+	/// Base-case FY2026 EBITDA.
+	measure 'FY2026 Base EBITDA' = ```
+			CALCULATE ( [Forecast EBITDA Base], dim_date[Year] = 2026 )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: 28caecdf-42aa-56d0-a1d3-eca50ed3c565
+
+	/// Revenue on fact_budget_forecast for whatever scenario is in context. Use it when Scenario is on the axis.
+	measure 'Forecast Plan Revenue' = ```
+			SUM ( fact_budget_forecast[Revenue] )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Forecast
+		lineageTag: 62f2fc6a-647f-5202-a22f-d141a3d496ae
+
+	/// FY2025 revenue predicted at the December 2024 origin and allocated on the FY2024 mix.
+	measure 'Backtest Revenue' = ```
+			CALCULATE (
+			    SUM ( fact_budget_forecast[Revenue] ),
+			    REMOVEFILTERS ( Scenario ),
+			    Scenario[Scenario] = "Backtest"
+			)
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Accuracy
+		lineageTag: bdec1932-d7dd-56c6-8480-11ac7c6d5900
+
+	/// Weighted absolute percent error at month grain. Dollar-weighted, which is the figure FP&A should quote. Matches the holdout WAPE at company level.
+	measure 'Forecast WAPE' = ```
+			VAR Monthly =
+			    ADDCOLUMNS (
+			        SUMMARIZE ( dim_date, dim_date[YearMonthSort] ),
+			        "@Act", CALCULATE ( [Revenue] ),
+			        "@Fc", CALCULATE ( [Backtest Revenue] )
+			    )
+			VAR Scored =
+			    FILTER ( Monthly, NOT ISBLANK ( [@Act] ) && NOT ISBLANK ( [@Fc] ) && [@Act] <> 0 )
+			RETURN
+			    DIVIDE ( SUMX ( Scored, ABS ( [@Act] - [@Fc] ) ), SUMX ( Scored, [@Act] ) )
+		```
+		formatString: "0.0%"
+		displayFolder: Accuracy
+		lineageTag: fba3dbd3-19c8-56b2-a74f-2356df6b41fa
+
+	/// Mean absolute percent error at month grain. Each month counts equally, so December does not dominate.
+	measure 'Forecast MAPE' = ```
+			VAR Monthly =
+			    ADDCOLUMNS (
+			        SUMMARIZE ( dim_date, dim_date[YearMonthSort] ),
+			        "@Act", CALCULATE ( [Revenue] ),
+			        "@Fc", CALCULATE ( [Backtest Revenue] )
+			    )
+			VAR Scored =
+			    FILTER ( Monthly, NOT ISBLANK ( [@Act] ) && NOT ISBLANK ( [@Fc] ) && [@Act] <> 0 )
+			RETURN
+			    AVERAGEX ( Scored, DIVIDE ( ABS ( [@Act] - [@Fc] ), [@Act] ) )
+		```
+		formatString: "0.0%"
+		displayFolder: Accuracy
+		lineageTag: 431b8129-fa06-5613-85e8-e3ef73abbe70
+
+	/// Root mean squared error of monthly revenue, in dollars.
+	measure 'Forecast RMSE' = ```
+			VAR Monthly =
+			    ADDCOLUMNS (
+			        SUMMARIZE ( dim_date, dim_date[YearMonthSort] ),
+			        "@Act", CALCULATE ( [Revenue] ),
+			        "@Fc", CALCULATE ( [Backtest Revenue] )
+			    )
+			VAR Scored =
+			    FILTER ( Monthly, NOT ISBLANK ( [@Act] ) && NOT ISBLANK ( [@Fc] ) )
+			RETURN
+			    SQRT ( AVERAGEX ( Scored, ( [@Act] - [@Fc] ) ^ 2 ) )
+		```
+		formatString: "\$#,0;(\$#,0)"
+		displayFolder: Accuracy
+		lineageTag: fd661f11-f613-5c85-8b3c-1e2bef2e8be9
+
+	partition _Measures = m
+		mode: import
+		source =
+			let
+			    Source = Table.FromRows(Json.Document("[[]]"), {"Column1"}),
+			    Empty = Table.SelectRows(Source, each false),
+			    Removed = Table.RemoveColumns(Empty, {"Column1"})
+			in
+			    Removed
+
+	annotation PBI_ResultType = Table

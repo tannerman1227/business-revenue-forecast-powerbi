@@ -1,0 +1,112 @@
+{
+  "name": "Corporate Finance",
+  "dataColors": [
+    "#0E7C7B",
+    "#C4A35A",
+    "#1F7A4D",
+    "#A33B32",
+    "#1F4E79",
+    "#5C6B73",
+    "#8DA9C4",
+    "#0E1C36",
+    "#D4760A",
+    "#6B4C7A"
+  ],
+  "foreground": "#1A2332",
+  "foregroundNeutralSecondary": "#5C6B73",
+  "background": "#F4F6F8",
+  "backgroundLight": "#FFFFFF",
+  "backgroundNeutral": "#E6EBF1",
+  "tableAccent": "#0E1C36",
+  "good": "#1F7A4D",
+  "neutral": "#C4A35A",
+  "bad": "#A33B32",
+  "maximum": "#0E1C36",
+  "center": "#C4A35A",
+  "minimum": "#E6EBF1",
+  "null": "#D0D5DD",
+  "textClasses": {
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 28,
+      "color": "#0E1C36"
+    },
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 12,
+      "color": "#0E1C36"
+    },
+    "header": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 11,
+      "color": "#1A2332"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 10,
+      "color": "#5C6B73"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#E2E8F0"
+              }
+            },
+            "radius": 8
+          }
+        ],
+        "title": [
+          {
+            "show": true,
+            "fontColor": {
+              "solid": {
+                "color": "#0E1C36"
+              }
+            },
+            "fontSize": 12,
+            "bold": true
+          }
+        ],
+        "visualHeader": [
+          {
+            "foreground": {
+              "solid": {
+                "color": "#5C6B73"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#F4F6F8"
+              }
+            },
+            "transparency": 0
+          }
+        ]
+      }
+    }
+  }
+}

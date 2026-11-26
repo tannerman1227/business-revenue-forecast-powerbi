@@ -1,0 +1,99 @@
+/// Monthly actuals from January 2022 through December 2025. Grain is month, region, product line, and segment.
+table fact_revenue_actuals
+	lineageTag: b7124f19-2efb-5b4b-b04d-c32b87ee1ad2
+
+	column DateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f39a5e2d-5dbe-5040-8355-53ce8f9751c9
+		summarizeBy: none
+		sourceColumn: DateKey
+		annotation SummarizationSetBy = Automatic
+	column Date
+		dataType: dateTime
+		lineageTag: 14740295-7438-5928-9f33-ea3b4d9fcddb
+		summarizeBy: none
+		sourceColumn: Date
+		annotation UnderlyingDateTimeDataType = Date
+		annotation SummarizationSetBy = Automatic
+	column RegionKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7ef323e0-48bc-51c4-8b67-cc23cd1a642c
+		summarizeBy: none
+		sourceColumn: RegionKey
+		annotation SummarizationSetBy = Automatic
+	column ProductLineKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 29c990eb-cb88-589f-bedd-9624731398d0
+		summarizeBy: none
+		sourceColumn: ProductLineKey
+		annotation SummarizationSetBy = Automatic
+	column SegmentKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9feba74f-c5c6-5f5a-9e8f-88ce4e50d6bf
+		summarizeBy: none
+		sourceColumn: SegmentKey
+		annotation SummarizationSetBy = Automatic
+	column Revenue
+		dataType: double
+		formatString: "\$#,0"
+		lineageTag: 158660f4-362e-53ff-9e42-4887341fbc71
+		summarizeBy: sum
+		sourceColumn: Revenue
+		annotation SummarizationSetBy = Automatic
+	column COGS
+		dataType: double
+		formatString: "\$#,0"
+		lineageTag: c8f57a31-e7b8-51e0-9d9f-aa9088a138e4
+		summarizeBy: sum
+		sourceColumn: COGS
+		annotation SummarizationSetBy = Automatic
+	column GrossProfit
+		dataType: double
+		isHidden
+		formatString: "\$#,0"
+		lineageTag: d7da7e1d-fc52-50cb-9382-dda3e934d1f1
+		summarizeBy: sum
+		sourceColumn: GrossProfit
+		annotation SummarizationSetBy = Automatic
+	column OpEx
+		dataType: double
+		formatString: "\$#,0"
+		lineageTag: adaedb7c-5c87-5a8c-b22b-95f6328dacdd
+		summarizeBy: sum
+		sourceColumn: OpEx
+		annotation SummarizationSetBy = Automatic
+	column EBITDA
+		dataType: double
+		isHidden
+		formatString: "\$#,0"
+		lineageTag: e9e6779b-8ba2-569a-bcc3-dcd7bd3ccf36
+		summarizeBy: sum
+		sourceColumn: EBITDA
+		annotation SummarizationSetBy = Automatic
+	/// Units differ by product line. See UnitOfMeasure.
+	column VolumeUnits
+		dataType: int64
+		formatString: "#,0"
+		lineageTag: 15693ba4-4747-517c-8033-80f230199d51
+		summarizeBy: sum
+		sourceColumn: VolumeUnits
+		annotation SummarizationSetBy = Automatic
+	partition fact_revenue_actuals = m
+		mode: import
+		source =
+			let
+			    Source = Csv.Document(File.Contents(pDataRoot & "fact_revenue_actuals.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+			    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			    Typed = Table.TransformColumnTypes(Promoted, {{"DateKey", Int64.Type}, {"Date", type date}, {"RegionKey", Int64.Type}, {"ProductLineKey", Int64.Type}, {"SegmentKey", Int64.Type}, {"Revenue", Currency.Type}, {"COGS", Currency.Type}, {"GrossProfit", Currency.Type}, {"OpEx", Currency.Type}, {"EBITDA", Currency.Type}, {"VolumeUnits", Int64.Type}})
+			in
+			    Typed
+
+	annotation PBI_ResultType = Table

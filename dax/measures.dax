@@ -1,0 +1,420 @@
+// Vantage Process Group
+// Measure table: _Measures
+//
+// Time intelligence runs on dim_date[Date]. The fact tables store one
+// row per month on the first of that month, so put month, quarter, or
+// year on the axis rather than day.
+//
+// Budget, forecast, and accuracy measures read fact_budget_forecast.
+// Explicit scenario measures clear a scenario slicer. Forecast Plan
+// Revenue does not, so it can be plotted with Scenario on the axis.
+
+
+// Revenue
+// ------------------------------------------------------------
+// Recognized revenue. Actuals only. Forecast scenarios are a separate fact.
+// Format: $#,0;($#,0)
+Revenue =
+    SUM ( fact_revenue_actuals[Revenue] )
+
+// Year-to-date revenue through the last visible date. Fiscal year equals the calendar year.
+// Format: $#,0;($#,0)
+Revenue YTD =
+    TOTALYTD ( [Revenue], dim_date[Date] )
+
+// Revenue in the same period last year.
+// Format: $#,0;($#,0)
+Revenue PY =
+    CALCULATE ( [Revenue], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+
+// Prior-year year-to-date revenue, aligned to the same elapsed period.
+// Format: $#,0;($#,0)
+Revenue YTD PY =
+    CALCULATE ( [Revenue YTD], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+
+// Absolute change in revenue versus the same period last year.
+// Format: $#,0;($#,0)
+Revenue YoY $ =
+    [Revenue] - [Revenue PY]
+
+// Percent change in revenue versus the same period last year.
+// Format: 0.0%
+Revenue YoY % =
+    DIVIDE ( [Revenue YoY $], [Revenue PY] )
+
+// Percent change versus the prior month. Read it on a month axis.
+// Format: 0.0%
+Revenue MoM % =
+    VAR PriorMonth =
+        CALCULATE ( [Revenue], DATEADD ( dim_date[Date], -1, MONTH ) )
+    RETURN
+        DIVIDE ( [Revenue] - PriorMonth, PriorMonth )
+
+// Sum of revenue over the three months ending at the last visible date.
+// Format: $#,0;($#,0)
+Revenue Rolling 3M =
+    CALCULATE (
+        [Revenue],
+        DATESINPERIOD ( dim_date[Date], MAX ( dim_date[Date] ), -3, MONTH )
+    )
+
+// Average monthly revenue over the trailing three months. The divisor is the number of months present, so FY2022 does not divide a short window by three.
+// Format: $#,0;($#,0)
+Revenue Rolling 3M Avg =
+    VAR EndDate = MAX ( dim_date[Date] )
+    VAR Window =
+        DATESINPERIOD ( dim_date[Date], EndDate, -3, MONTH )
+    VAR Months =
+        CALCULATE ( DISTINCTCOUNT ( dim_date[YearMonth] ), Window )
+    RETURN
+        DIVIDE ( CALCULATE ( [Revenue], Window ), Months )
+
+// Trailing twelve-month revenue.
+// Format: $#,0;($#,0)
+Revenue Rolling 12M =
+    CALCULATE (
+        [Revenue],
+        DATESINPERIOD ( dim_date[Date], MAX ( dim_date[Date] ), -12, MONTH )
+    )
+
+
+// Margin
+// ------------------------------------------------------------
+// Cost of goods sold on actuals.
+// Format: $#,0;($#,0)
+COGS =
+    SUM ( fact_revenue_actuals[COGS] )
+
+// Revenue minus COGS. Calculated, not taken from the stored column, so the identity cannot drift.
+// Format: $#,0;($#,0)
+Gross Profit =
+    [Revenue] - [COGS]
+
+// Gross profit as a share of revenue.
+// Format: 0.0%
+Gross Margin % =
+    DIVIDE ( [Gross Profit], [Revenue] )
+
+// Operating expense allocated to the fact grain. Regional intensity is applied upstream of this measure.
+// Format: $#,0;($#,0)
+OpEx =
+    SUM ( fact_revenue_actuals[OpEx] )
+
+// Operating expense ratio.
+// Format: 0.0%
+OpEx % of Revenue =
+    DIVIDE ( [OpEx], [Revenue] )
+
+// Gross profit minus operating expense.
+// Format: $#,0;($#,0)
+EBITDA =
+    [Gross Profit] - [OpEx]
+
+// EBITDA as a share of revenue.
+// Format: 0.0%
+EBITDA Margin % =
+    DIVIDE ( [EBITDA], [Revenue] )
+
+// Gross profit in the same period last year.
+// Format: $#,0;($#,0)
+Gross Profit PY =
+    CALCULATE ( [Gross Profit], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+
+// Gross margin in the same period last year.
+// Format: 0.0%
+Gross Margin % PY =
+    CALCULATE ( [Gross Margin %], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+
+// Year-over-year change in gross margin, in basis points.
+// Format: +0;-0;0
+Gross Margin YoY bps =
+    ( [Gross Margin %] - [Gross Margin % PY] ) * 10000
+
+// Operating expense in the same period last year.
+// Format: $#,0;($#,0)
+OpEx PY =
+    CALCULATE ( [OpEx], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+
+// EBITDA in the same period last year.
+// Format: $#,0;($#,0)
+EBITDA PY =
+    CALCULATE ( [EBITDA], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+
+// Year-to-date EBITDA.
+// Format: $#,0;($#,0)
+EBITDA YTD =
+    TOTALYTD ( [EBITDA], dim_date[Date] )
+
+// Percent change in EBITDA versus the same period last year.
+// Format: 0.0%
+EBITDA YoY % =
+    DIVIDE ( [EBITDA] - [EBITDA PY], [EBITDA PY] )
+
+// EBITDA margin in the same period last year.
+// Format: 0.0%
+EBITDA Margin % PY =
+    CALCULATE ( [EBITDA Margin %], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+
+// Year-over-year change in EBITDA margin, in basis points.
+// Format: +0;-0;0
+EBITDA Margin YoY bps =
+    ( [EBITDA Margin %] - [EBITDA Margin % PY] ) * 10000
+
+
+// Budget
+// ------------------------------------------------------------
+// Annual budget revenue. Ignores a scenario slicer so the comparison stays on screen.
+// Format: $#,0;($#,0)
+Budget Revenue =
+    CALCULATE (
+        SUM ( fact_budget_forecast[Revenue] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Budget"
+    )
+
+// Budget cost of goods sold.
+// Format: $#,0;($#,0)
+Budget COGS =
+    CALCULATE (
+        SUM ( fact_budget_forecast[COGS] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Budget"
+    )
+
+// Budget gross profit.
+// Format: $#,0;($#,0)
+Budget Gross Profit =
+    [Budget Revenue] - [Budget COGS]
+
+// Budget gross margin.
+// Format: 0.0%
+Budget Gross Margin % =
+    DIVIDE ( [Budget Gross Profit], [Budget Revenue] )
+
+// Budget operating expense.
+// Format: $#,0;($#,0)
+Budget OpEx =
+    CALCULATE (
+        SUM ( fact_budget_forecast[OpEx] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Budget"
+    )
+
+// Budget EBITDA.
+// Format: $#,0;($#,0)
+Budget EBITDA =
+    [Budget Gross Profit] - [Budget OpEx]
+
+// Budget EBITDA margin.
+// Format: 0.0%
+Budget EBITDA Margin % =
+    DIVIDE ( [Budget EBITDA], [Budget Revenue] )
+
+// Revenue minus budget. Positive is a beat.
+// Format: $#,0;($#,0)
+Revenue vs Budget $ =
+    [Revenue] - [Budget Revenue]
+
+// Revenue variance as a percent of budget.
+// Format: 0.0%
+Revenue vs Budget % =
+    DIVIDE ( [Revenue vs Budget $], [Budget Revenue] )
+
+// Gross-margin variance versus budget, in basis points.
+// Format: +0;-0;0
+Gross Margin vs Budget bps =
+    ( [Gross Margin %] - [Budget Gross Margin %] ) * 10000
+
+// Operating expense minus budget. Negative means spending came in under plan.
+// Format: $#,0;($#,0)
+OpEx vs Budget $ =
+    [OpEx] - [Budget OpEx]
+
+// EBITDA minus budget. Positive is a beat.
+// Format: $#,0;($#,0)
+EBITDA vs Budget $ =
+    [EBITDA] - [Budget EBITDA]
+
+// EBITDA variance as a percent of budget.
+// Format: 0.0%
+EBITDA vs Budget % =
+    DIVIDE ( [EBITDA vs Budget $], [Budget EBITDA] )
+
+// EBITDA-margin variance versus budget, in basis points.
+// Format: +0;-0;0
+EBITDA Margin vs Budget bps =
+    ( [EBITDA Margin %] - [Budget EBITDA Margin %] ) * 10000
+
+
+// Forecast
+// ------------------------------------------------------------
+// FY2026 base-case revenue from the Holt-Winters point forecast.
+// Format: $#,0;($#,0)
+Forecast Revenue Base =
+    CALCULATE (
+        SUM ( fact_budget_forecast[Revenue] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Forecast - Base"
+    )
+
+// FY2026 upside revenue, the 90th percentile of simulated full-year revenue.
+// Format: $#,0;($#,0)
+Forecast Revenue Upside =
+    CALCULATE (
+        SUM ( fact_budget_forecast[Revenue] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Forecast - Upside"
+    )
+
+// FY2026 downside revenue, the 10th percentile of simulated full-year revenue.
+// Format: $#,0;($#,0)
+Forecast Revenue Downside =
+    CALCULATE (
+        SUM ( fact_budget_forecast[Revenue] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Forecast - Downside"
+    )
+
+// Base-case gross profit.
+// Format: $#,0;($#,0)
+Forecast Gross Profit Base =
+    CALCULATE (
+        SUM ( fact_budget_forecast[GrossProfit] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Forecast - Base"
+    )
+
+// Base-case operating expense.
+// Format: $#,0;($#,0)
+Forecast OpEx Base =
+    CALCULATE (
+        SUM ( fact_budget_forecast[OpEx] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Forecast - Base"
+    )
+
+// Base-case EBITDA.
+// Format: $#,0;($#,0)
+Forecast EBITDA Base =
+    [Forecast Gross Profit Base] - [Forecast OpEx Base]
+
+// Upside EBITDA.
+// Format: $#,0;($#,0)
+Forecast EBITDA Upside =
+    CALCULATE (
+        SUM ( fact_budget_forecast[GrossProfit] ) - SUM ( fact_budget_forecast[OpEx] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Forecast - Upside"
+    )
+
+// Downside EBITDA.
+// Format: $#,0;($#,0)
+Forecast EBITDA Downside =
+    CALCULATE (
+        SUM ( fact_budget_forecast[GrossProfit] ) - SUM ( fact_budget_forecast[OpEx] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Forecast - Downside"
+    )
+
+// Base-case gross margin.
+// Format: 0.0%
+Forecast Gross Margin % Base =
+    DIVIDE ( [Forecast Gross Profit Base], [Forecast Revenue Base] )
+
+// Base-case EBITDA margin.
+// Format: 0.0%
+Forecast EBITDA Margin % Base =
+    DIVIDE ( [Forecast EBITDA Base], [Forecast Revenue Base] )
+
+// Actual revenue through FY2025 and the base forecast in FY2026. Use it on a month or quarter axis. A grand total stays on actuals, because the stage is no longer unique.
+// Format: $#,0;($#,0)
+Revenue Actual or Forecast =
+    IF (
+        SELECTEDVALUE ( dim_date[CalendarStage] ) = "Forecast Horizon",
+        [Forecast Revenue Base],
+        [Revenue]
+    )
+
+// Base-case FY2026 revenue, pinned to the year so a multi-year page still shows the plan.
+// Format: $#,0;($#,0)
+FY2026 Base Revenue =
+    CALCULATE ( [Forecast Revenue Base], dim_date[Year] = 2026 )
+
+// Official FY2026 budget revenue.
+// Format: $#,0;($#,0)
+FY2026 Budget Revenue =
+    CALCULATE ( [Budget Revenue], dim_date[Year] = 2026 )
+
+// Upside FY2026 revenue.
+// Format: $#,0;($#,0)
+FY2026 Upside Revenue =
+    CALCULATE ( [Forecast Revenue Upside], dim_date[Year] = 2026 )
+
+// Downside FY2026 revenue.
+// Format: $#,0;($#,0)
+FY2026 Downside Revenue =
+    CALCULATE ( [Forecast Revenue Downside], dim_date[Year] = 2026 )
+
+// Base-case FY2026 EBITDA.
+// Format: $#,0;($#,0)
+FY2026 Base EBITDA =
+    CALCULATE ( [Forecast EBITDA Base], dim_date[Year] = 2026 )
+
+// Revenue on fact_budget_forecast for whatever scenario is in context. Use it when Scenario is on the axis.
+// Format: $#,0;($#,0)
+Forecast Plan Revenue =
+    SUM ( fact_budget_forecast[Revenue] )
+
+
+// Accuracy
+// ------------------------------------------------------------
+// FY2025 revenue predicted at the December 2024 origin and allocated on the FY2024 mix.
+// Format: $#,0;($#,0)
+Backtest Revenue =
+    CALCULATE (
+        SUM ( fact_budget_forecast[Revenue] ),
+        REMOVEFILTERS ( Scenario ),
+        Scenario[Scenario] = "Backtest"
+    )
+
+// Weighted absolute percent error at month grain. Dollar-weighted, which is the figure FP&A should quote. Matches the holdout WAPE at company level.
+// Format: 0.0%
+Forecast WAPE =
+    VAR Monthly =
+        ADDCOLUMNS (
+            SUMMARIZE ( dim_date, dim_date[YearMonthSort] ),
+            "@Act", CALCULATE ( [Revenue] ),
+            "@Fc", CALCULATE ( [Backtest Revenue] )
+        )
+    VAR Scored =
+        FILTER ( Monthly, NOT ISBLANK ( [@Act] ) && NOT ISBLANK ( [@Fc] ) && [@Act] <> 0 )
+    RETURN
+        DIVIDE ( SUMX ( Scored, ABS ( [@Act] - [@Fc] ) ), SUMX ( Scored, [@Act] ) )
+
+// Mean absolute percent error at month grain. Each month counts equally, so December does not dominate.
+// Format: 0.0%
+Forecast MAPE =
+    VAR Monthly =
+        ADDCOLUMNS (
+            SUMMARIZE ( dim_date, dim_date[YearMonthSort] ),
+            "@Act", CALCULATE ( [Revenue] ),
+            "@Fc", CALCULATE ( [Backtest Revenue] )
+        )
+    VAR Scored =
+        FILTER ( Monthly, NOT ISBLANK ( [@Act] ) && NOT ISBLANK ( [@Fc] ) && [@Act] <> 0 )
+    RETURN
+        AVERAGEX ( Scored, DIVIDE ( ABS ( [@Act] - [@Fc] ), [@Act] ) )
+
+// Root mean squared error of monthly revenue, in dollars.
+// Format: $#,0;($#,0)
+Forecast RMSE =
+    VAR Monthly =
+        ADDCOLUMNS (
+            SUMMARIZE ( dim_date, dim_date[YearMonthSort] ),
+            "@Act", CALCULATE ( [Revenue] ),
+            "@Fc", CALCULATE ( [Backtest Revenue] )
+        )
+    VAR Scored =
+        FILTER ( Monthly, NOT ISBLANK ( [@Act] ) && NOT ISBLANK ( [@Fc] ) )
+    RETURN
+        SQRT ( AVERAGEX ( Scored, ( [@Act] - [@Fc] ) ^ 2 ) )

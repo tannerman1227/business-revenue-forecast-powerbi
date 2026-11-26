@@ -1,0 +1,5 @@
+RegionKey,Region,RegionCode,ManagementGroup,Currency
+1,North America,NA,Americas,USD
+2,EMEA,EMEA,International,USD
+3,Asia Pacific,APAC,International,USD
+4,Latin America,LATAM,Americas,USD

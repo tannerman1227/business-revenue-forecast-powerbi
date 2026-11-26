@@ -1,0 +1,197 @@
+/// Daily calendar from 1 Jan 2022 through 31 Dec 2026. Marked as the model's date table.
+table dim_date
+	lineageTag: 21caaf01-815e-5d13-868c-10bd5aafbd02
+	dataCategory: Time
+
+	/// Calendar date. Facts land on the first of the month.
+	column Date
+		dataType: dateTime
+		isKey
+		lineageTag: 14740295-7438-5928-9f33-ea3b4d9fcddb
+		summarizeBy: none
+		sourceColumn: Date
+		annotation UnderlyingDateTimeDataType = Date
+		annotation SummarizationSetBy = Automatic
+
+	column DateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f39a5e2d-5dbe-5040-8355-53ce8f9751c9
+		summarizeBy: none
+		sourceColumn: DateKey
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 1b1f8e26-f299-5807-80de-a015937f8167
+		summarizeBy: none
+		sourceColumn: Year
+		annotation SummarizationSetBy = Automatic
+
+	column FiscalYear
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: cdc95e15-4bfe-55f6-b8db-8a3fed787745
+		summarizeBy: none
+		sourceColumn: FiscalYear
+		annotation SummarizationSetBy = Automatic
+
+	/// FY2022 through FY2026. The fiscal year is the calendar year.
+	column FiscalYearLabel
+		dataType: string
+		lineageTag: 1089d95f-1f92-519e-82ae-5f3f3ac6c3a1
+		summarizeBy: none
+		sourceColumn: FiscalYearLabel
+		sortByColumn: FiscalYear
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 0bcfa9fb-bd53-521c-b7e4-bdb0a2be6b91
+		summarizeBy: none
+		sourceColumn: Quarter
+		annotation SummarizationSetBy = Automatic
+
+	column QuarterName
+		dataType: string
+		lineageTag: e4fb8109-e082-5fab-be47-8b6994443c85
+		summarizeBy: none
+		sourceColumn: QuarterName
+		sortByColumn: Quarter
+		annotation SummarizationSetBy = Automatic
+
+	column YearQuarter
+		dataType: string
+		lineageTag: 276802e8-0eee-5ad0-9460-88ff6259d070
+		summarizeBy: none
+		sourceColumn: YearQuarter
+		sortByColumn: YearQuarterSort
+		annotation SummarizationSetBy = Automatic
+
+	column YearQuarterSort
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b8459814-eeb9-54e8-b62d-478765290368
+		summarizeBy: none
+		sourceColumn: YearQuarterSort
+		annotation SummarizationSetBy = Automatic
+
+	column MonthNumber
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2abc6d26-d19c-5425-899f-cb6a04626a14
+		summarizeBy: none
+		sourceColumn: MonthNumber
+		annotation SummarizationSetBy = Automatic
+
+	column MonthName
+		dataType: string
+		lineageTag: 15302233-00f9-57f0-906b-3d72b1542ddd
+		summarizeBy: none
+		sourceColumn: MonthName
+		sortByColumn: MonthNumber
+		annotation SummarizationSetBy = Automatic
+
+	column MonthShort
+		dataType: string
+		lineageTag: a8fa9c50-5e31-5691-a08d-a1eab15aaf82
+		summarizeBy: none
+		sourceColumn: MonthShort
+		sortByColumn: MonthNumber
+		annotation SummarizationSetBy = Automatic
+
+	column MonthYear
+		dataType: string
+		lineageTag: db6ef356-7185-531b-8074-0bb47755e400
+		summarizeBy: none
+		sourceColumn: MonthYear
+		sortByColumn: YearMonthSort
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonth
+		dataType: string
+		lineageTag: 3bddca93-9873-56e0-9b66-5423577a8ae9
+		summarizeBy: none
+		sourceColumn: YearMonth
+		sortByColumn: YearMonthSort
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonthSort
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 56a21ca5-9901-5cfd-83c6-d2c1b26d65ca
+		summarizeBy: none
+		sourceColumn: YearMonthSort
+		annotation SummarizationSetBy = Automatic
+
+	column Day
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 720e3981-fde4-557e-95c7-e88a8d12bbb1
+		summarizeBy: none
+		sourceColumn: Day
+		annotation SummarizationSetBy = Automatic
+
+	column MonthStart
+		dataType: dateTime
+		isHidden
+		lineageTag: 7190fb26-5134-5b1f-b28b-ac78cde6be2c
+		summarizeBy: none
+		sourceColumn: MonthStart
+		annotation UnderlyingDateTimeDataType = Date
+		annotation SummarizationSetBy = Automatic
+
+	column IsMonthStart
+		dataType: boolean
+		isHidden
+		lineageTag: eb7a95f0-c91d-5587-927d-1649916e4923
+		summarizeBy: none
+		sourceColumn: IsMonthStart
+		annotation SummarizationSetBy = Automatic
+
+	/// Actuals through December 2025, then the forecast horizon.
+	column CalendarStage
+		dataType: string
+		lineageTag: 93d3814f-ddd3-528c-ae43-275dde113400
+		summarizeBy: none
+		sourceColumn: CalendarStage
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Calendar'
+		lineageTag: 4bf23c44-f2e6-57a9-9b94-76c7e0213477
+
+		level Year
+			lineageTag: 0f2830b8-c869-55c5-ad07-e3bd1997ac01
+			column: Year
+
+		level Quarter
+			lineageTag: 5600421a-961f-598b-bd6d-a092ab0a4dd3
+			column: YearQuarter
+
+		level Month
+			lineageTag: c5d9c3a0-4ad6-5677-bfad-91dc93b39ad7
+			column: MonthYear
+
+	partition dim_date = m
+		mode: import
+		source =
+			let
+			    Source = Csv.Document(File.Contents(pDataRoot & "dim_date.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+			    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			    Typed = Table.TransformColumnTypes(Promoted, {{"DateKey", Int64.Type}, {"Date", type date}, {"Year", Int64.Type}, {"FiscalYear", Int64.Type}, {"FiscalYearLabel", type text}, {"Quarter", Int64.Type}, {"QuarterName", type text}, {"YearQuarter", type text}, {"MonthNumber", Int64.Type}, {"MonthName", type text}, {"MonthShort", type text}, {"MonthYear", type text}, {"YearMonth", type text}, {"YearMonthSort", Int64.Type}, {"Day", Int64.Type}, {"MonthStart", type date}, {"IsMonthStart", type text}, {"CalendarStage", type text}}),
+			    LogicalMonthStart = Table.TransformColumns(Typed, {{"IsMonthStart", each _ = "True", type logical}}),
+			    WithQuarterSort = Table.AddColumn(LogicalMonthStart, "YearQuarterSort", each [Year] * 10 + [Quarter], Int64.Type)
+			in
+			    WithQuarterSort
+
+
+	annotation PBI_ResultType = Table
