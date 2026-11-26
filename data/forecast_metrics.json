@@ -1,0 +1,512 @@
+{
+  "dataset": {
+    "synthetic": true,
+    "company": "Vantage Process Group",
+    "currency": "USD",
+    "seed": 42,
+    "actuals": "2022-01 to 2025-12",
+    "budget": "2022-01 to 2026-12",
+    "forecast": "2026-01 to 2026-12",
+    "grain": "month x region x product line x customer segment"
+  },
+  "row_counts": {
+    "dim_date": 1826,
+    "dim_region": 4,
+    "dim_product_line": 5,
+    "dim_customer_segment": 3,
+    "fact_revenue_actuals": 2880,
+    "fact_budget_rows": 3600,
+    "fact_forecast_rows": 2160,
+    "fact_backtest_rows": 720,
+    "fact_budget_forecast": 6480
+  },
+  "annual_actuals": {
+    "2022": {
+      "revenue": 165290919.56,
+      "cogs": 99298760.39,
+      "gross_profit": 65992159.17,
+      "gross_margin": 0.3992485452054436,
+      "opex": 50931353.02,
+      "ebitda": 15060806.15,
+      "ebitda_margin": 0.09111696026673129
+    },
+    "2023": {
+      "revenue": 180111734.22,
+      "cogs": 104236897.88,
+      "gross_profit": 75874836.34,
+      "gross_margin": 0.42126536990267177,
+      "opex": 53590358.78,
+      "ebitda": 22284477.56,
+      "ebitda_margin": 0.12372585082535664
+    },
+    "2024": {
+      "revenue": 201196008.13,
+      "cogs": 113034442.44,
+      "gross_profit": 88161565.69,
+      "gross_margin": 0.4381874496885427,
+      "opex": 56664646.86,
+      "ebitda": 31496918.83,
+      "ebitda_margin": 0.1565484281857556
+    },
+    "2025": {
+      "revenue": 219919317.46,
+      "cogs": 119974740.89,
+      "gross_profit": 99944576.57,
+      "gross_margin": 0.45446019805958343,
+      "opex": 58911319.35,
+      "ebitda": 41033257.22,
+      "ebitda_margin": 0.18658323285976608
+    }
+  },
+  "annual_budget": {
+    "2022": {
+      "revenue": 173400000.17,
+      "cogs": 103991355.25,
+      "gross_profit": 69408644.92,
+      "gross_margin": 0.40028053547838705,
+      "opex": 51692161.51,
+      "ebitda": 17716483.41,
+      "ebitda_margin": 0.1021711845019083
+    },
+    "2023": {
+      "revenue": 187099999.89,
+      "cogs": 110032657.8,
+      "gross_profit": 77067342.09,
+      "gross_margin": 0.4119045544377847,
+      "opex": 54933270.05,
+      "ebitda": 22134072.04,
+      "ebitda_margin": 0.11830075923577277
+    },
+    "2024": {
+      "revenue": 196199999.97,
+      "cogs": 113087461.44,
+      "gross_profit": 83112538.53,
+      "gross_margin": 0.42361130755712717,
+      "opex": 57995255.29,
+      "ebitda": 25117283.24,
+      "ebitda_margin": 0.12801877290438618
+    },
+    "2025": {
+      "revenue": 225599999.94,
+      "cogs": 127373580.33,
+      "gross_profit": 98226419.61,
+      "gross_margin": 0.4354007962594152,
+      "opex": 62579054.6,
+      "ebitda": 35647365.01,
+      "ebitda_margin": 0.15801136976720162
+    },
+    "2026": {
+      "revenue": 237512862.89,
+      "cogs": 131279767.45,
+      "gross_profit": 106233095.44,
+      "gross_margin": 0.44727301985829726,
+      "opex": 66123327.86,
+      "ebitda": 40109767.58,
+      "ebitda_margin": 0.16887408577351934
+    }
+  },
+  "fy2025_vs_budget": {
+    "revenue": "-$5.7M",
+    "revenue_pct": "-2.5%",
+    "gross_margin_bps": "+191 bps",
+    "ebitda": "+$5.4M",
+    "ebitda_pct": "+15.1%",
+    "opex": "-$3.7M"
+  },
+  "yoy": {
+    "2023": {
+      "revenue": "+9.0%",
+      "ebitda": "+48.0%",
+      "vs_budget": "-3.7%"
+    },
+    "2024": {
+      "revenue": "+11.7%",
+      "ebitda": "+41.3%",
+      "vs_budget": "+2.5%"
+    },
+    "2025": {
+      "revenue": "+9.3%",
+      "ebitda": "+30.3%",
+      "vs_budget": "-2.5%"
+    }
+  },
+  "cagr_fy2022_fy2025": "10.0%",
+  "gross_margin_expansion_bps": "+552 bps",
+  "ebitda_margin_expansion_bps": "+955 bps",
+  "mix": {
+    "region": {
+      "2022": {
+        "North America": "48.3%",
+        "EMEA": "29.5%",
+        "Asia Pacific": "15.2%",
+        "Latin America": "6.9%"
+      },
+      "2025": {
+        "North America": "45.7%",
+        "EMEA": "25.7%",
+        "Asia Pacific": "21.0%",
+        "Latin America": "7.7%"
+      }
+    },
+    "product": {
+      "2022": {
+        "Process Equipment": "42.6%",
+        "Aftermarket Parts": "18.1%",
+        "Field Service Contracts": "22.1%",
+        "Industrial Software": "8.3%",
+        "Professional Services": "8.9%"
+      },
+      "2025": {
+        "Process Equipment": "33.1%",
+        "Aftermarket Parts": "19.7%",
+        "Field Service Contracts": "23.8%",
+        "Industrial Software": "15.7%",
+        "Professional Services": "7.7%"
+      }
+    },
+    "segment": {
+      "2022": {
+        "Enterprise": "57.1%",
+        "Mid-Market": "30.7%",
+        "SMB": "12.1%"
+      },
+      "2025": {
+        "Enterprise": "55.1%",
+        "Mid-Market": "32.0%",
+        "SMB": "12.9%"
+      }
+    }
+  },
+  "margin_bridge_fy2022_fy2025": {
+    "mix_effect": "+369 bps",
+    "rate_effect": "+183 bps",
+    "total_change": "+552 bps",
+    "lines": {
+      "Process Equipment": {
+        "share_start": 0.4260130166705207,
+        "share_end": 0.33128365680405203,
+        "margin_start": 0.30020570782024986,
+        "margin_end": 0.3199583606799159
+      },
+      "Aftermarket Parts": {
+        "share_start": 0.1813020923337647,
+        "share_end": 0.19720503696947045,
+        "margin_start": 0.549023403335747,
+        "margin_end": 0.5643190132535433
+      },
+      "Field Service Contracts": {
+        "share_start": 0.2205783837191691,
+        "share_end": 0.23817347877831124,
+        "margin_start": 0.4045261344183314,
+        "margin_end": 0.425699637020723
+      },
+      "Industrial Software": {
+        "share_start": 0.08275203003535156,
+        "share_end": 0.15665059203480852,
+        "margin_start": 0.7145424241642505,
+        "margin_end": 0.735746948976456
+      },
+      "Professional Services": {
+        "share_start": 0.08935447724119369,
+        "share_end": 0.07668723541335785,
+        "margin_start": 0.2625314131579756,
+        "margin_end": 0.2677252833245172
+      }
+    }
+  },
+  "region_fy2025": {
+    "North America": {
+      "revenue": "$100.4M",
+      "gross_margin": "46.7%",
+      "ebitda_margin": "24.5%",
+      "yoy": "+7.2%"
+    },
+    "EMEA": {
+      "revenue": "$56.5M",
+      "gross_margin": "44.1%",
+      "ebitda_margin": "16.7%",
+      "yoy": "+4.1%"
+    },
+    "Asia Pacific": {
+      "revenue": "$46.2M",
+      "gross_margin": "45.5%",
+      "ebitda_margin": "11.0%",
+      "yoy": "+20.5%"
+    },
+    "Latin America": {
+      "revenue": "$16.8M",
+      "gross_margin": "42.2%",
+      "ebitda_margin": "11.2%",
+      "yoy": "+13.1%"
+    }
+  },
+  "forecast_2026": {
+    "base": {
+      "revenue": 240225854.74,
+      "cogs": 128951161.65,
+      "gross_profit": 111274693.09,
+      "gross_margin": 0.46320864675633794,
+      "opex": 61562328.72,
+      "ebitda": 49712364.37,
+      "ebitda_margin": 0.20694010819028796
+    },
+    "upside": {
+      "revenue": 246963314.48,
+      "cogs": 130434810.8,
+      "gross_profit": 116528503.68,
+      "gross_margin": 0.4718453990843118,
+      "opex": 63624224.89,
+      "ebitda": 52904278.79,
+      "ebitda_margin": 0.21421918029159095
+    },
+    "downside": {
+      "revenue": 233143715.31,
+      "cogs": 128829264.38,
+      "gross_profit": 104314450.93,
+      "gross_margin": 0.4474255323215472,
+      "opex": 59971723.1,
+      "ebitda": 44342727.83,
+      "ebitda_margin": 0.1901948236993633
+    },
+    "base_vs_fy2025": "+9.2%",
+    "base_vs_budget": "+$2.7M",
+    "base_ebitda_vs_budget": "+$9.6M",
+    "base_vs_budget_pct": "+1.1%",
+    "budget_vs_fy2025": "+8.0%",
+    "interval_80": "$233.1M to $247.0M",
+    "interval_95": "$230.1M to $251.6M"
+  },
+  "backtest": {
+    "model": "Holt-Winters additive trend, multiplicative seasonality, period 12",
+    "model_key": "holt_winters",
+    "train": "2022-01 to 2024-12",
+    "holdout": "2025-01 to 2025-12",
+    "origin": "December 2024 close",
+    "mape": "2.4%",
+    "wape": "2.5%",
+    "rmse": "$547K",
+    "bias": "-1.2%",
+    "mape_raw": 0.024214115033197047,
+    "wape_raw": 0.025330127713386285,
+    "rmse_raw": 547337.364794365,
+    "bias_raw": -0.012489899309592316,
+    "holdout_actual_revenue": 219919317.46,
+    "holdout_forecast_revenue": 217172547.33,
+    "monthly": [
+      {
+        "month": "2025-01",
+        "actual": 13789845.91,
+        "forecast": 14235590.02,
+        "absolute_pct_error": 0.0323240817342428
+      },
+      {
+        "month": "2025-02",
+        "actual": 14616718.24,
+        "forecast": 14934200.53,
+        "absolute_pct_error": 0.02172049023145081
+      },
+      {
+        "month": "2025-03",
+        "actual": 19166828.0,
+        "forecast": 19616616.16,
+        "absolute_pct_error": 0.02346701068307949
+      },
+      {
+        "month": "2025-04",
+        "actual": 15585231.96,
+        "forecast": 15758519.52,
+        "absolute_pct_error": 0.011118702666535666
+      },
+      {
+        "month": "2025-05",
+        "actual": 16301238.89,
+        "forecast": 16326843.91,
+        "absolute_pct_error": 0.0015707409623894433
+      },
+      {
+        "month": "2025-06",
+        "actual": 20400078.03,
+        "forecast": 19401390.45,
+        "absolute_pct_error": 0.04895508640074246
+      },
+      {
+        "month": "2025-07",
+        "actual": 15630649.64,
+        "forecast": 15320672.69,
+        "absolute_pct_error": 0.019831353986486267
+      },
+      {
+        "month": "2025-08",
+        "actual": 16107985.69,
+        "forecast": 15664572.04,
+        "absolute_pct_error": 0.02752756697382099
+      },
+      {
+        "month": "2025-09",
+        "actual": 20984502.45,
+        "forecast": 20501345.18,
+        "absolute_pct_error": 0.023024480454518614
+      },
+      {
+        "month": "2025-10",
+        "actual": 17851445.05,
+        "forecast": 17578221.7,
+        "absolute_pct_error": 0.015305391004755224
+      },
+      {
+        "month": "2025-11",
+        "actual": 19610812.54,
+        "forecast": 19012287.94,
+        "absolute_pct_error": 0.030520132410112383
+      },
+      {
+        "month": "2025-12",
+        "actual": 29873981.06,
+        "forecast": 28822287.19,
+        "absolute_pct_error": 0.03520434289023046
+      }
+    ],
+    "level_smoothing": 0.8086,
+    "trend_smoothing": 0.0067,
+    "seasonal_smoothing": 0.0,
+    "simulations": 4000,
+    "interval_method": "Residual bootstrap of the refit Holt-Winters model, 4,000 paths, seed 42. Downside and Upside are the 10th and 90th percentiles of simulated FY2026 revenue, allocated across months in proportion to the square root of the horizon."
+  },
+  "display": {
+    "fy2022": {
+      "revenue": "$165.3M",
+      "gross_margin": "39.9%",
+      "opex": "$50.9M",
+      "ebitda": "$15.1M",
+      "ebitda_margin": "9.1%"
+    },
+    "fy2023": {
+      "revenue": "$180.1M",
+      "gross_margin": "42.1%",
+      "opex": "$53.6M",
+      "ebitda": "$22.3M",
+      "ebitda_margin": "12.4%"
+    },
+    "fy2024": {
+      "revenue": "$201.2M",
+      "gross_margin": "43.8%",
+      "opex": "$56.7M",
+      "ebitda": "$31.5M",
+      "ebitda_margin": "15.7%"
+    },
+    "fy2025": {
+      "revenue": "$219.9M",
+      "gross_margin": "45.4%",
+      "opex": "$58.9M",
+      "ebitda": "$41.0M",
+      "ebitda_margin": "18.7%"
+    },
+    "fy2024_budget": {
+      "revenue": "$196.2M",
+      "gross_margin": "42.4%",
+      "opex": "$58.0M",
+      "ebitda": "$25.1M",
+      "ebitda_margin": "12.8%"
+    },
+    "fy2025_budget": {
+      "revenue": "$225.6M",
+      "gross_margin": "43.5%",
+      "opex": "$62.6M",
+      "ebitda": "$35.6M",
+      "ebitda_margin": "15.8%"
+    },
+    "fy2026_budget": {
+      "revenue": "$237.5M",
+      "gross_margin": "44.7%",
+      "opex": "$66.1M",
+      "ebitda": "$40.1M",
+      "ebitda_margin": "16.9%"
+    },
+    "fy2026_base": {
+      "revenue": "$240.2M",
+      "gross_margin": "46.3%",
+      "opex": "$61.6M",
+      "ebitda": "$49.7M",
+      "ebitda_margin": "20.7%"
+    },
+    "fy2026_upside": {
+      "revenue": "$247.0M",
+      "gross_margin": "47.2%",
+      "opex": "$63.6M",
+      "ebitda": "$52.9M",
+      "ebitda_margin": "21.4%"
+    },
+    "fy2026_downside": {
+      "revenue": "$233.1M",
+      "gross_margin": "44.7%",
+      "opex": "$60.0M",
+      "ebitda": "$44.3M",
+      "ebitda_margin": "19.0%"
+    }
+  },
+  "readme_figures": [
+    "FY2022 revenue $165.3M",
+    "FY2022 gross margin 39.9%",
+    "FY2022 EBITDA $15.1M",
+    "FY2022 EBITDA margin 9.1%",
+    "FY2023 revenue $180.1M",
+    "FY2023 growth +9.0%",
+    "FY2024 revenue $201.2M",
+    "FY2024 growth +11.7%",
+    "FY2024 beat the budget by +2.5%",
+    "FY2025 revenue $219.9M",
+    "FY2025 growth +9.3%",
+    "FY2025 revenue versus budget -$5.7M",
+    "FY2025 revenue variance -2.5%",
+    "FY2025 gross margin 45.4%",
+    "FY2025 gross margin versus budget +191 bps",
+    "FY2025 EBITDA $41.0M",
+    "FY2025 EBITDA versus budget +$5.4M",
+    "FY2025 EBITDA variance +15.1%",
+    "FY2025 EBITDA margin 18.7%",
+    "FY2025 OpEx $58.9M",
+    "FY2025 OpEx versus budget -$3.7M",
+    "three-year revenue CAGR 10.0%",
+    "gross margin expanded +552 bps",
+    "EBITDA margin expanded +955 bps",
+    "software mix from 8.3% to 15.7%",
+    "equipment mix from 42.6% to 33.1%",
+    "Asia Pacific mix from 15.2% to 21.0%",
+    "North America was 45.7% of FY2025 revenue",
+    "mix effect +369 bps and rate effect +183 bps",
+    "FY2026 budget revenue $237.5M",
+    "FY2026 budget gross margin 44.7%",
+    "FY2026 budget EBITDA $40.1M",
+    "FY2026 budget EBITDA margin 16.9%",
+    "FY2026 budget growth +8.0%",
+    "FY2026 base revenue $240.2M",
+    "FY2026 base growth +9.2%",
+    "FY2026 base versus budget +$2.7M",
+    "FY2026 base EBITDA versus budget +$9.6M",
+    "FY2026 base gross margin 46.3%",
+    "FY2026 base EBITDA $49.7M",
+    "FY2026 base EBITDA margin 20.7%",
+    "FY2026 upside revenue $247.0M",
+    "FY2026 upside EBITDA $52.9M",
+    "FY2026 downside revenue $233.1M",
+    "FY2026 downside EBITDA $44.3M",
+    "holdout MAPE 2.4%",
+    "holdout WAPE 2.5%",
+    "holdout RMSE $547K",
+    "holdout bias -1.2%",
+    "80% interval $233.1M to $247.0M",
+    "95% interval $230.1M to $251.6M",
+    "North America FY2025 revenue $100.4M",
+    "North America EBITDA margin 24.5%",
+    "North America growth +7.2%",
+    "EMEA FY2025 revenue $56.5M",
+    "EMEA growth +4.1%",
+    "EMEA EBITDA margin 16.7%",
+    "Asia Pacific FY2025 revenue $46.2M",
+    "Asia Pacific growth +20.5%",
+    "Asia Pacific EBITDA margin 11.0%",
+    "Latin America FY2025 revenue $16.8M",
+    "Latin America growth +13.1%",
+    "smoothing coefficients level 0.81, trend 0.01, seasonal 0.00"
+  ]
+}

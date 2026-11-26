@@ -1,0 +1,4 @@
+expression pDataRoot = "C:\\Data\\business-revenue-forecast-powerbi\\data\\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: e8504f3f-6629-5a35-aab7-aaae8376affc
+
+	annotation PBI_ResultType = Text

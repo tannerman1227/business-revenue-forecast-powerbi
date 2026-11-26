@@ -1,0 +1,44 @@
+relationship a761d353-0fdf-5ad4-abd3-6c29e927e989
+	crossFilteringBehavior: oneDirection
+	fromColumn: fact_revenue_actuals.Date
+	toColumn: dim_date.Date
+
+relationship 692ccfab-2ef6-5769-ba6c-4ad033b8fe2a
+	crossFilteringBehavior: oneDirection
+	fromColumn: fact_revenue_actuals.RegionKey
+	toColumn: dim_region.RegionKey
+
+relationship 01fc13d3-acc9-5dc4-875f-91df66a99805
+	crossFilteringBehavior: oneDirection
+	fromColumn: fact_revenue_actuals.ProductLineKey
+	toColumn: dim_product_line.ProductLineKey
+
+relationship 7931fd93-70f4-5092-83ac-a7022f2d16ee
+	crossFilteringBehavior: oneDirection
+	fromColumn: fact_revenue_actuals.SegmentKey
+	toColumn: dim_customer_segment.SegmentKey
+
+relationship 0b9d177a-b57e-508f-827a-e7bac286cfd9
+	crossFilteringBehavior: oneDirection
+	fromColumn: fact_budget_forecast.Date
+	toColumn: dim_date.Date
+
+relationship 4c510602-e38c-51b0-8e92-8ad7871a7925
+	crossFilteringBehavior: oneDirection
+	fromColumn: fact_budget_forecast.RegionKey
+	toColumn: dim_region.RegionKey
+
+relationship ec554124-3a0e-52f8-a196-a575d0f92740
+	crossFilteringBehavior: oneDirection
+	fromColumn: fact_budget_forecast.ProductLineKey
+	toColumn: dim_product_line.ProductLineKey
+
+relationship 0c157beb-0b74-5dee-b756-f75fa743d23f
+	crossFilteringBehavior: oneDirection
+	fromColumn: fact_budget_forecast.SegmentKey
+	toColumn: dim_customer_segment.SegmentKey
+
+relationship b3629f85-3eeb-5c3e-aec9-ff7773704344
+	crossFilteringBehavior: oneDirection
+	fromColumn: fact_budget_forecast.Scenario
+	toColumn: Scenario.Scenario

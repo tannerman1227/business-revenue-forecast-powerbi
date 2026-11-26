@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pbi/localSettings.json
+.pbi/*.abf
+.DS_Store
